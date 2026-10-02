@@ -216,9 +216,7 @@ def _require_object_list(
     items: list[Mapping[str, JsonValue]] = []
     for item in value:
         if not isinstance(item, dict):
-            raise BybitTransactionLogError(
-                f"Bybit response field '{key}' must contain objects"
-            )
+            raise BybitTransactionLogError(f"Bybit response field '{key}' must contain objects")
         items.append(item)
     return items
 
@@ -226,9 +224,7 @@ def _require_object_list(
 def _require_non_empty_str(payload: Mapping[str, JsonValue], key: str) -> str:
     value = payload.get(key)
     if not isinstance(value, str) or not value.strip():
-        raise BybitTransactionLogError(
-            f"Bybit response field '{key}' must be a non-empty string"
-        )
+        raise BybitTransactionLogError(f"Bybit response field '{key}' must be a non-empty string")
     return value
 
 
@@ -249,9 +245,7 @@ def _optional_non_empty_str(
 def _require_integer_string(payload: Mapping[str, JsonValue], key: str) -> int:
     value = _require_non_empty_str(payload, key)
     if not value.isdigit():
-        raise BybitTransactionLogError(
-            f"Bybit response field '{key}' must be an integer string"
-        )
+        raise BybitTransactionLogError(f"Bybit response field '{key}' must be an integer string")
     return int(value)
 
 
@@ -281,9 +275,7 @@ def _parse_decimal(value: str, key: str) -> Decimal:
     try:
         result = Decimal(value)
     except InvalidOperation as exc:
-        raise BybitTransactionLogError(
-            f"Bybit response field '{key}' must be decimal"
-        ) from exc
+        raise BybitTransactionLogError(f"Bybit response field '{key}' must be decimal") from exc
     if not result.is_finite():
         raise BybitTransactionLogError(f"Bybit response field '{key}' must be finite")
     return result
@@ -292,9 +284,7 @@ def _parse_decimal(value: str, key: str) -> Decimal:
 def _require_cursor(payload: Mapping[str, JsonValue]) -> str:
     value = payload.get("nextPageCursor")
     if not isinstance(value, str):
-        raise BybitTransactionLogError(
-            "Bybit response field 'nextPageCursor' must be a string"
-        )
+        raise BybitTransactionLogError("Bybit response field 'nextPageCursor' must be a string")
     return value
 
 
