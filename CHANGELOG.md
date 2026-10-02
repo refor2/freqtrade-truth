@@ -6,6 +6,7 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ### Added
 
+- Credential-free Bybit inverse-market preflight and Trading-symbol discovery using public V5 instrument metadata.
 - Bybit inverse transaction-log ledger reader preserving funding, normalized fee signs, cash flow, and reported net change.
 - Fail-closed Bybit API-key preflight requiring the authenticated key to report read-only mode.
 - GET-only Bybit V5 HMAC transport using the official signing rule and runtime-only credentials.
