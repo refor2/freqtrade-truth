@@ -90,9 +90,7 @@ class BybitV5HmacTransport:
 
         timestamp_text = str(timestamp)
         recv_window_text = str(self._recv_window_ms)
-        signature_payload = (
-            f"{timestamp_text}{self._api_key}{recv_window_text}{query_string}"
-        )
+        signature_payload = f"{timestamp_text}{self._api_key}{recv_window_text}{query_string}"
         signature = hmac.new(
             self._api_secret.encode("utf-8"),
             signature_payload.encode("utf-8"),
