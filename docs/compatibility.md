@@ -57,6 +57,8 @@ The package includes a GET-only HMAC transport for Bybit V5 system-generated API
 
 The Bybit integration also includes a separate inverse transaction-log ledger reader using `GET /v5/account/transaction-log` with cursor pagination and seven-day time windows. Ledger events remain separate from closed-trade records so funding can be reconciled later without premature attribution.
 
+The Bybit integration also includes a public, credential-free `GET /v5/market/instruments-info` preflight that verifies inverse-perpetual contract type, Trading status, base/quote/settlement assets, and current order/leverage metadata before authenticated reads.
+
 See [bybit-adapter.md](bybit-adapter.md) for the exact field mapping and limitations.
 
 ## Operating systems
