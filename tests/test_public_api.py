@@ -1,12 +1,15 @@
 from freqtrade_truth.adapters import (
     BybitApiKeySafetyError,
     BybitInverseClosedPnlAdapter,
+    BybitInverseMarketInfo,
     BybitInverseTransactionLogReader,
+    BybitMarketPreflightError,
     BybitResponseError,
     BybitTransactionLogEntry,
     BybitTransactionLogError,
     BybitTransactionLogQuery,
     BybitV5HmacTransport,
+    BybitV5PublicTransport,
     FreqtradeReadAdapter,
     FreqtradeResponseError,
     HttpTransportError,
@@ -14,6 +17,8 @@ from freqtrade_truth.adapters import (
     ReadOnlyTradeAdapter,
     RetryingJsonTransport,
     StdlibJsonTransport,
+    list_bybit_inverse_trading_symbols,
+    verify_bybit_inverse_perpetual,
     verify_bybit_read_only_key,
 )
 
@@ -22,12 +27,15 @@ def test_preview_public_adapter_api_is_importable() -> None:
     exported = {
         BybitApiKeySafetyError,
         BybitInverseClosedPnlAdapter,
+        BybitInverseMarketInfo,
         BybitInverseTransactionLogReader,
+        BybitMarketPreflightError,
         BybitResponseError,
         BybitTransactionLogEntry,
         BybitTransactionLogError,
         BybitTransactionLogQuery,
         BybitV5HmacTransport,
+        BybitV5PublicTransport,
         FreqtradeReadAdapter,
         FreqtradeResponseError,
         HttpTransportError,
@@ -35,7 +43,9 @@ def test_preview_public_adapter_api_is_importable() -> None:
         ReadOnlyTradeAdapter,
         RetryingJsonTransport,
         StdlibJsonTransport,
+        list_bybit_inverse_trading_symbols,
+        verify_bybit_inverse_perpetual,
         verify_bybit_read_only_key,
     }
 
-    assert len(exported) == 16
+    assert len(exported) == 21
