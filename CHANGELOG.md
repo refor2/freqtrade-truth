@@ -6,6 +6,7 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ### Added
 
+- GET-only Bybit V5 HMAC transport using the official signing rule and runtime-only credentials.
 - Bybit V5 inverse closed-PnL reader with explicit BTCUSD-style settlement currency, cursor pagination, and API-compliant time-window splitting.
 - Fail-closed Bybit normalization that preserves missing funding/price PnL instead of deriving unavailable components.
 - Shared contract tests exercised across multiple read-only adapter implementations.
@@ -16,6 +17,7 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ### Security
 
+- Bybit authenticated transport requires HTTPS and never includes credentials in its own exception messages.
 - Retries are limited by attempt count and maximum delay.
 - Non-configured HTTP failures are not retried.
 - Redirect behavior remains fail-closed and credentials are never forwarded across redirects.

@@ -53,7 +53,7 @@ The implementation was reviewed against Bybit's public V5 documentation and inve
 
 The adapter handles cursor pagination and splits longer queries into API-compliant time windows. It intentionally leaves funding and price-only PnL missing because the closed-PnL response does not provide those components separately.
 
-Authentication/request signing is not bundled into this first reader increment; callers provide a compatible read-only JSON transport.
+The package includes a GET-only HMAC transport for Bybit V5 system-generated API keys. It requires HTTPS and follows the official timestamp + API key + receive-window + query-string signing rule.
 
 See [bybit-adapter.md](bybit-adapter.md) for the exact field mapping and limitations.
 

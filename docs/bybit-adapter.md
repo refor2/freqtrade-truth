@@ -8,13 +8,14 @@ The initial Bybit integration reads closed PnL for one configured inverse-contra
 - `category=inverse`
 - an explicit uppercase symbol such as the synthetic/example target `BTCUSD`
 
-The adapter is read-only and accepts an injected JSON transport. Authentication and request signing are intentionally outside this first adapter increment.
+The adapter is read-only and accepts an injected JSON transport. The package also provides a GET-only HMAC transport for Bybit V5 system-generated API keys.
 
 Official sources reviewed:
 
 - https://bybit-exchange.github.io/docs/v5/position/close-pnl
 - https://www.bybit.com/en/help-center/article/Profit-Loss-calculations-Inverse-Contracts
 - https://bybit-exchange.github.io/docs/v5/account/transaction-log
+- https://bybit-exchange.github.io/docs/v5/guide
 
 ## Mapping
 
@@ -69,3 +70,26 @@ The adapter fails closed when:
 - a duplicate record identifier appears.
 
 All tests use synthetic values only.
+
+## HMAC authenticated transport
+
+`BybitV5HmacTransport` implements the official V5 GET signing rule for system-generated HMAC keys:
+
+`timestamp + api_key + recv_window + queryString`
+
+The resulting HMAC-SHA256 signature is sent as lowercase hexadecimal together with:
+
+- `X-BAPI-API-KEY`
+- `X-BAPI-TIMESTAMP`
+- `X-BAPI-SIGN`
+- `X-BAPI-RECV-WINDOW`
+
+The transport is GET-only, requires HTTPS, rejects credentials embedded in URLs, rejects non-V5 paths, never includes credentials in its own exception messages, and bounds response size.
+
+The exact query string used to compute the signature is also used in the outgoing request. This avoids signature drift caused by signing one parameter representation and sending another.
+
+Credentials are runtime-only values. They must never be committed to this repository, fixtures, logs, screenshots, issues, or pull requests.
+
+Bybit documents that authenticated timestamps must satisfy the server-time/receive-window rule. Systems using this transport should keep their local clock synchronized.
+
+For production use, create a read-only Bybit API key and keep the secret outside Git tracking. The current transport does not create, modify, or cancel orders and exposes no mutation methods.
