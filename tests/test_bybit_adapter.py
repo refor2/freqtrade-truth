@@ -46,12 +46,13 @@ def response(
     category: str = "inverse",
     ret_code: int = 0,
 ) -> JsonObject:
+    normalized_items: list[JsonValue] = [dict(item) for item in items]
     return {
         "retCode": ret_code,
         "retMsg": "OK" if ret_code == 0 else "synthetic error",
         "result": {
             "category": category,
-            "list": items,
+            "list": normalized_items,
             "nextPageCursor": cursor,
         },
         "time": 0,
