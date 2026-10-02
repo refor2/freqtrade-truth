@@ -6,12 +6,17 @@ import asyncio
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from http.client import HTTPException, HTTPResponse, HTTPSConnection
 from typing import cast
 from urllib.parse import urlencode, urlsplit
 
-from freqtrade_truth.adapters.http import HttpTransportError, JsonHttpTransport, JsonObject, JsonValue
+from freqtrade_truth.adapters.http import (
+    HttpTransportError,
+    JsonHttpTransport,
+    JsonObject,
+    JsonValue,
+)
 
 _DEFAULT_TIMEOUT_SECONDS = 10.0
 _DEFAULT_MAX_RESPONSE_BYTES = 2 * 1024 * 1024
@@ -329,7 +334,7 @@ def _require_decimal_string(
     value = _require_non_empty_str(payload, key)
     try:
         result = Decimal(value)
-    except Exception as exc:
+    except InvalidOperation as exc:
         raise BybitMarketPreflightError(
             f"Bybit response field '{key}' must be decimal"
         ) from exc
