@@ -157,7 +157,12 @@ CASES = (
             symbol="BTCUSD",
             settlement_currency="BTC",
         ),
-        query=contract_query(),
+        query=ClosedTradeQuery(
+            closed_from=datetime(2030, 1, 1, tzinfo=UTC),
+            closed_until=datetime(2030, 1, 2, tzinfo=UTC),
+            instrument="BTCUSD",
+            limit=10,
+        ),
     ),
 )
 
