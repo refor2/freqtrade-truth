@@ -104,10 +104,7 @@ def test_get_request_uses_exact_query_string_for_signature_and_target() -> None:
 
     connection = FakeHttpsConnection.instances[0]
     assert connection.method == "GET"
-    assert (
-        connection.target
-        == "/v5/position/closed-pnl?category=inverse&symbol=BTCUSD"
-    )
+    assert connection.target == "/v5/position/closed-pnl?category=inverse&symbol=BTCUSD"
 
     headers = connection.headers
     assert headers is not None
@@ -115,8 +112,7 @@ def test_get_request_uses_exact_query_string_for_signature_and_target() -> None:
     assert headers["X-BAPI-TIMESTAMP"] == "1658384314791"
     assert headers["X-BAPI-RECV-WINDOW"] == "5000"
     assert (
-        headers["X-BAPI-SIGN"]
-        == "32c1e61d4af6a38f3146e002c575c11ceffe9b66fdecf3489613f509b2e6bf8a"
+        headers["X-BAPI-SIGN"] == "32c1e61d4af6a38f3146e002c575c11ceffe9b66fdecf3489613f509b2e6bf8a"
     )
     assert connection.closed
     assert connection.response.closed
@@ -217,9 +213,7 @@ def test_response_size_limit_is_enforced() -> None:
         FakeHttpsConnection,
     ):
         with pytest.raises(HttpTransportError, match="size limit"):
-            asyncio.run(
-                transport(max_response_bytes=32).get_json("v5/example")
-            )
+            asyncio.run(transport(max_response_bytes=32).get_json("v5/example"))
 
 
 def test_json_object_is_required() -> None:
