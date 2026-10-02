@@ -137,3 +137,29 @@ When funding and fee are both present, the reader validates the documented ident
 A mismatch fails closed.
 
 The reader follows cursor pagination, splits time ranges into API-compliant seven-day windows, filters other symbols locally, rejects duplicate source records and repeated cursors, and uses synthetic data only in tests.
+
+## Public inverse market preflight
+
+The package includes a credential-free public market preflight based on:
+
+- `GET /v5/market/instruments-info`
+- `category=inverse`
+- `status=Trading`
+
+`verify_bybit_inverse_perpetual()` verifies that the requested symbol still matches the expected public contract invariants before authenticated account reads begin.
+
+For a `BTCUSD` deployment the caller can require:
+
+- `contractType = InversePerpetual`
+- `status = Trading`
+- `baseCoin = BTC`
+- `quoteCoin = USD`
+- `settleCoin = BTC`
+
+The preflight also returns the current public minimum/maximum leverage, leverage step, minimum order quantity, quantity step, and tick size. These values are read from Bybit at runtime rather than hard-coded as permanent assumptions.
+
+`list_bybit_inverse_trading_symbols()` retrieves the complete current Trading inverse-symbol set using cursor pagination.
+
+`BybitV5PublicTransport` is a credential-free HTTPS GET transport for public V5 endpoints. It rejects non-V5 paths, credentials embedded in URLs, oversized responses, and non-object JSON payloads.
+
+A changed contract type, delisted/non-Trading symbol, changed settlement asset, malformed response, duplicate symbol, or repeated pagination cursor fails closed.

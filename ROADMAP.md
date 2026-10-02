@@ -25,6 +25,7 @@ Status: in progress
 - [x] Bybit GET-only HMAC authentication transport.
 - [x] Bybit read-only API-key preflight.
 - [x] Bybit inverse transaction-log ledger reader.
+- [x] Bybit public inverse-market preflight and Trading-symbol discovery.
 - [x] Adapter contract tests shared across implementations.
 - [x] Freqtrade pagination and time-window handling.
 - [x] Bounded retry support for HTTP 429/503 with Retry-After handling.

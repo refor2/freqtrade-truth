@@ -6,6 +6,13 @@ from freqtrade_truth.adapters.bybit import (
     BybitResponseError,
 )
 from freqtrade_truth.adapters.bybit_auth import BybitV5HmacTransport
+from freqtrade_truth.adapters.bybit_market import (
+    BybitInverseMarketInfo,
+    BybitMarketPreflightError,
+    BybitV5PublicTransport,
+    list_bybit_inverse_trading_symbols,
+    verify_bybit_inverse_perpetual,
+)
 from freqtrade_truth.adapters.bybit_preflight import (
     BybitApiKeySafetyError,
     verify_bybit_read_only_key,
@@ -31,6 +38,9 @@ __all__ = [
     "BybitInverseClosedPnlAdapter",
     "BybitResponseError",
     "BybitV5HmacTransport",
+    "BybitInverseMarketInfo",
+    "BybitMarketPreflightError",
+    "BybitV5PublicTransport",
     "BybitInverseTransactionLogReader",
     "BybitTransactionLogEntry",
     "BybitTransactionLogError",
@@ -43,5 +53,7 @@ __all__ = [
     "ReadOnlyTradeAdapter",
     "RetryingJsonTransport",
     "StdlibJsonTransport",
+    "list_bybit_inverse_trading_symbols",
+    "verify_bybit_inverse_perpetual",
     "verify_bybit_read_only_key",
 ]
