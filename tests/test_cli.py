@@ -48,7 +48,7 @@ def config(*, authenticated: bool = False, json_output: bool = False) -> cli.Byb
         base_coin="BTC",
         quote_coin="USD",
         settle_coin="BTC",
-        base_url="https://api.example.invalid",
+        base_url="https://api.bybit.com",
         authenticated=authenticated,
         hours=24,
         limit=50,
@@ -195,3 +195,61 @@ def test_cli_json_output_contains_no_credentials(
     assert "synthetic-api-key-value" not in stdout.getvalue()
     assert "synthetic-api-secret-value" not in stdout.getvalue()
     assert '"status": "ok"' in stdout.getvalue()
+
+
+def test_authenticated_mode_rejects_non_bybit_host_before_network(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    called = False
+
+    async def should_not_run(
+        transport: object,
+        *,
+        symbol: str,
+        expected_base_coin: str,
+        expected_quote_coin: str,
+        expected_settle_coin: str,
+    ) -> BybitInverseMarketInfo:
+        nonlocal called
+        del transport, symbol, expected_base_coin, expected_quote_coin, expected_settle_coin
+        called = True
+        return market_info()
+
+    monkeypatch.setattr(cli, "verify_bybit_inverse_perpetual", should_not_run)
+    unsafe = cli.BybitCheckConfig(
+        symbol="BTCUSD",
+        base_coin="BTC",
+        quote_coin="USD",
+        settle_coin="BTC",
+        base_url="https://api.example.invalid",
+        authenticated=True,
+        hours=24,
+        limit=50,
+        json_output=False,
+    )
+
+    with pytest.raises(ValueError, match="official Bybit"):
+        asyncio.run(
+            cli.run_bybit_check(
+                unsafe,
+                environ={
+                    "BYBIT_API_KEY": "synthetic-api-key-value",
+                    "BYBIT_API_SECRET": "synthetic-api-secret-value",
+                },
+            )
+        )
+
+    assert not called
+
+
+@pytest.mark.parametrize(
+    "base_url",
+    [
+        "https://api.bybit.com",
+        "https://api-testnet.bybit.com",
+        "https://api-demo.bybit.com",
+        "https://api.bybit.eu",
+    ],
+)
+def test_official_bybit_hosts_are_allowed_for_authenticated_mode(base_url: str) -> None:
+    cli._require_official_bybit_base_url(base_url)
