@@ -1,0 +1,32 @@
+[
+  {
+    "record_id": "synthetic-ft-001",
+    "source_kind": "freqtrade",
+    "source_name": "synthetic-freqtrade",
+    "trade_ref": "synthetic-trade-001",
+    "instrument": "BTC/USDT:USDT",
+    "settlement_currency": "USDT",
+    "opened_at": "2030-01-01T08:00:00Z",
+    "closed_at": "2030-01-01T12:00:00Z",
+    "price_pnl": "12.50",
+    "trading_fees": "-0.40",
+    "funding": "-0.10",
+    "other_adjustments": "0.00",
+    "reported_net_pnl": "12.00"
+  },
+  {
+    "record_id": "synthetic-ex-001",
+    "source_kind": "exchange",
+    "source_name": "synthetic-exchange",
+    "trade_ref": "synthetic-trade-001",
+    "instrument": "BTC/USDT:USDT",
+    "settlement_currency": "USDT",
+    "opened_at": "2030-01-01T08:00:00Z",
+    "closed_at": "2030-01-01T12:00:00Z",
+    "price_pnl": "12.50",
+    "trading_fees": "-0.42",
+    "funding": "-0.10",
+    "other_adjustments": "0.00",
+    "reported_net_pnl": "11.98"
+  }
+]

@@ -1,0 +1,55 @@
+name: Adapter request
+description: Propose a new read-only source adapter.
+title: "[Adapter] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Adapter proposals must be based on **public documentation and read-only APIs**.
+
+        Never paste API keys, account data, private endpoints, production logs, or proprietary trading logic.
+
+  - type: input
+    id: source
+    attributes:
+      label: Source
+      description: Public product or API name.
+      placeholder: "Example Exchange"
+    validations:
+      required: true
+
+  - type: input
+    id: docs
+    attributes:
+      label: Public API documentation
+      description: Link to official public documentation.
+      placeholder: "https://..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: endpoints
+    attributes:
+      label: Proposed read-only endpoints
+      description: List the GET/read endpoints and the financial fields they expose.
+    validations:
+      required: true
+
+  - type: textarea
+    id: mapping
+    attributes:
+      label: Proposed normalized mapping
+      description: Explain how source fields map to public normalized fields. State uncertainty explicitly.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: The proposal requires no account mutation capability.
+          required: true
+        - label: The information above comes from public documentation and contains no private data or credentials.
+          required: true

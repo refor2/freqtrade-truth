@@ -216,3 +216,31 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Public repository safety baseline
+# Never commit local environment files or credentials.
+.env*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+credentials/
+secrets/
+private/
+local/
+*.sqlite
+*.sqlite3
+*.db
+
+# Local/private datasets and exports
+data/raw/
+data/private/
+exports/
+backups/
+
+# OS / IDE
+.DS_Store
+.idea/

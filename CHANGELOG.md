@@ -1,0 +1,39 @@
+# Changelog
+
+All notable public changes to Freqtrade Truth are documented here.
+
+## Unreleased
+
+### Added
+
+- Bounded, deterministic retry transport for transient HTTP 429/503 responses.
+- Retry-After support with a configured maximum delay cap.
+- Structured HTTP transport errors exposing status code and retry metadata.
+
+### Security
+
+- Retries are limited by attempt count and maximum delay.
+- Non-configured HTTP failures are not retried.
+- Redirect behavior remains fail-closed and credentials are never forwarded across redirects.
+
+## 0.0.1 - 2026-10-02
+
+### Added
+
+- Public-safe repository foundation and contribution policy.
+- Normalized immutable financial domain contracts.
+- Read-only adapter protocol.
+- Synthetic fixtures and contract tests.
+- Freqtrade closed-trade read adapter.
+- Dependency-free GET-only HTTP transport.
+- Python 3.11–3.14 CI, strict typing, linting, formatting, and packaging checks.
+- Public threat model, compatibility statement, versioning policy, and safe issue intake.
+
+### Security
+
+- Public-safety scan required by CI.
+- Credentials are prohibited from URLs and public fixtures.
+- Authenticated non-loopback HTTP is rejected.
+- Redirects are not followed by the built-in transport.
+- HTTP response size is bounded.
+- HTTP responses and sockets are closed explicitly.

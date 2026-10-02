@@ -1,0 +1,17 @@
+{
+  "trades": [
+    {
+      "trade_id": 1003,
+      "pair": "ETH/USDT:USDT",
+      "quote_currency": "USDT",
+      "is_open": false,
+      "open_timestamp": 1893571200000,
+      "close_timestamp": 1893585600000,
+      "profit_abs": -3.21,
+      "funding_fees": 0.05
+    }
+  ],
+  "trades_count": 1,
+  "offset": 2,
+  "total_trades": 3
+}

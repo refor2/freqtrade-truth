@@ -1,0 +1,59 @@
+name: Bug report
+description: Report a reproducible defect using public-safe information only.
+title: "[Bug] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a problem.
+
+        **Do not include credentials, real account identifiers, real trades, balances, private logs, internal URLs, IP addresses, screenshots containing private data, or proprietary strategy information.**
+        Use synthetic/redacted examples only.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What went wrong?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: Provide the smallest public-safe reproduction using synthetic data.
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Freqtrade Truth version
+      placeholder: "0.0.x"
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      placeholder: "3.14"
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Public-safety confirmation
+      options:
+        - label: I removed all secrets, real account/trade data, private infrastructure details, and proprietary strategy information.
+          required: true
