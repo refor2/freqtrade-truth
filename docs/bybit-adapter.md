@@ -93,3 +93,19 @@ Credentials are runtime-only values. They must never be committed to this reposi
 Bybit documents that authenticated timestamps must satisfy the server-time/receive-window rule. Systems using this transport should keep their local clock synchronized.
 
 For production use, create a read-only Bybit API key and keep the secret outside Git tracking. The current transport does not create, modify, or cancel orders and exposes no mutation methods.
+
+## Read-only API key preflight
+
+Before reading account data, call `verify_bybit_read_only_key()` with the authenticated transport.
+
+The preflight calls:
+
+- `GET /v5/user/query-api`
+
+and requires the response to report:
+
+- `readOnly = 1`
+
+Any unsuccessful, malformed, or read/write response fails closed with `BybitApiKeySafetyError`.
+
+This check does not modify the API key. It only verifies the access mode reported by Bybit.
