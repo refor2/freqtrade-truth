@@ -9,7 +9,7 @@ from freqtrade_truth.adapters.bybit import (
     BybitInverseClosedPnlAdapter,
     BybitResponseError,
 )
-from freqtrade_truth.adapters.http import JsonObject
+from freqtrade_truth.adapters.http import JsonObject, JsonValue
 from freqtrade_truth.core.models import ClosedTradeQuery, FinancialField, SourceKind
 
 
@@ -25,8 +25,8 @@ def closed_pnl_item(
     closed_pnl: str = "0.00123",
     open_fee: str | None = "0.00001",
     close_fee: str | None = "0.00002",
-) -> dict[str, object]:
-    item: dict[str, object] = {
+) -> dict[str, JsonValue]:
+    item: dict[str, JsonValue] = {
         "symbol": symbol,
         "orderId": order_id,
         "updatedTime": milliseconds(updated_at),
@@ -40,7 +40,7 @@ def closed_pnl_item(
 
 
 def response(
-    items: list[dict[str, object]],
+    items: list[dict[str, JsonValue]],
     *,
     cursor: str = "",
     category: str = "inverse",
@@ -171,8 +171,7 @@ def test_long_query_is_split_into_at_most_seven_day_windows() -> None:
     assert len(transport.requests) == 3
 
     windows = [
-        (int(params["startTime"]), int(params["endTime"]))
-        for _, params in transport.requests
+        (int(params["startTime"]), int(params["endTime"])) for _, params in transport.requests
     ]
     assert windows[0][0] == int(closed_from.timestamp() * 1000)
     assert windows[-1][1] == int(closed_until.timestamp() * 1000)
@@ -188,9 +187,7 @@ def test_long_query_is_split_into_at_most_seven_day_windows() -> None:
 def test_instrument_mismatch_returns_empty_without_request() -> None:
     transport = RecordingTransport([])
 
-    records = asyncio.run(
-        adapter(transport).fetch_closed_trades(query(instrument="ETHUSD"))
-    )
+    records = asyncio.run(adapter(transport).fetch_closed_trades(query(instrument="ETHUSD")))
 
     assert records == ()
     assert transport.requests == []
@@ -312,23 +309,28 @@ def test_repeated_cursor_fails_closed() -> None:
 
 
 @pytest.mark.parametrize(
-    "kwargs",
+    ("symbol", "settlement_currency", "page_size", "source_name"),
     [
-        {"symbol": ""},
-        {"symbol": "btcusd"},
-        {"settlement_currency": ""},
-        {"settlement_currency": "btc"},
-        {"page_size": 0},
-        {"page_size": 101},
-        {"source_name": "   "},
+        ("", "BTC", 100, "bybit"),
+        ("btcusd", "BTC", 100, "bybit"),
+        ("BTCUSD", "", 100, "bybit"),
+        ("BTCUSD", "btc", 100, "bybit"),
+        ("BTCUSD", "BTC", 0, "bybit"),
+        ("BTCUSD", "BTC", 101, "bybit"),
+        ("BTCUSD", "BTC", 100, "   "),
     ],
 )
-def test_constructor_rejects_invalid_configuration(kwargs: dict[str, object]) -> None:
-    base_kwargs: dict[str, object] = {
-        "symbol": "BTCUSD",
-        "settlement_currency": "BTC",
-    }
-    base_kwargs.update(kwargs)
-
+def test_constructor_rejects_invalid_configuration(
+    symbol: str,
+    settlement_currency: str,
+    page_size: int,
+    source_name: str,
+) -> None:
     with pytest.raises(ValueError):
-        BybitInverseClosedPnlAdapter(RecordingTransport([]), **base_kwargs)
+        BybitInverseClosedPnlAdapter(
+            RecordingTransport([]),
+            symbol=symbol,
+            settlement_currency=settlement_currency,
+            page_size=page_size,
+            source_name=source_name,
+        )
