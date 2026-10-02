@@ -79,9 +79,7 @@ class BybitCheckConfig:
                 raise ValueError(f"{field_name} must be a non-empty uppercase value")
 
         if self.hours <= 0 or self.hours > _MAX_SMOKE_WINDOW_HOURS:
-            raise ValueError(
-                f"hours must be between 1 and {_MAX_SMOKE_WINDOW_HOURS}"
-            )
+            raise ValueError(f"hours must be between 1 and {_MAX_SMOKE_WINDOW_HOURS}")
         if self.limit <= 0 or self.limit > _MAX_RECORD_LIMIT:
             raise ValueError(f"limit must be between 1 and {_MAX_RECORD_LIMIT}")
 
@@ -292,8 +290,7 @@ def _print_human_summary(result: Mapping[str, object], out: TextIO) -> None:
     print("Bybit smoke check: PASS", file=out)
     print(f"Mode: {result.get('mode')}", file=out)
     print(
-        "Market: "
-        f"{market.get('symbol')} / {market.get('contract_type')} / {market.get('status')}",
+        f"Market: {market.get('symbol')} / {market.get('contract_type')} / {market.get('status')}",
         file=out,
     )
     print(
@@ -334,9 +331,7 @@ def _require_official_bybit_base_url(base_url: str) -> None:
         or parsed.username is not None
         or parsed.password is not None
     ):
-        raise ValueError(
-            "authenticated mode requires an official Bybit HTTPS API base URL"
-        )
+        raise ValueError("authenticated mode requires an official Bybit HTTPS API base URL")
 
 
 def _redact_message(message: str, environ: Mapping[str, str]) -> str:
