@@ -12,4 +12,5 @@ Describe the public-facing change.
 - [ ] Test and example data are fully synthetic.
 - [ ] No content was copied from a private repository without explicit public-release review.
 - [ ] `python scripts/public_safety_check.py` passes.
+- [ ] `python scripts/commit_metadata_check.py` passes for protected project identities.
 - [ ] If anything was uncertain, I excluded it rather than publishing it.
