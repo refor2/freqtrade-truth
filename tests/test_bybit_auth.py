@@ -133,7 +133,10 @@ def test_boolean_query_values_use_lowercase_json_style() -> None:
             )
         )
 
-    assert FakeHttpsConnection.instances[0].target == "/v5/example?enabled=true&disabled=false"
+    assert (
+        FakeHttpsConnection.instances[0].target
+        == "/v5/account/transaction-log?enabled=true&disabled=false"
+    )
 
 
 @pytest.mark.parametrize(
