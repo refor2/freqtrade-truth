@@ -3,9 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-SCRIPT_SOURCE = (
-    Path(__file__).resolve().parents[1] / "scripts" / "commit_metadata_check.py"
-)
+SCRIPT_SOURCE = Path(__file__).resolve().parents[1] / "scripts" / "commit_metadata_check.py"
 
 
 def run_privacy_check(
