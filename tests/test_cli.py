@@ -1,5 +1,6 @@
 import asyncio
 import io
+from decimal import Decimal
 from collections.abc import Mapping
 
 import pytest
@@ -16,12 +17,12 @@ def market_info() -> BybitInverseMarketInfo:
         settle_coin="BTC",
         contract_type="InversePerpetual",
         status="Trading",
-        min_leverage=cli.Decimal("1"),
-        max_leverage=cli.Decimal("100"),
-        leverage_step=cli.Decimal("0.01"),
-        min_order_qty=cli.Decimal("1"),
-        qty_step=cli.Decimal("1"),
-        tick_size=cli.Decimal("0.1"),
+        min_leverage=Decimal("1"),
+        max_leverage=Decimal("100"),
+        leverage_step=Decimal("0.01"),
+        min_order_qty=Decimal("1"),
+        qty_step=Decimal("1"),
+        tick_size=Decimal("0.1"),
     )
 
 
