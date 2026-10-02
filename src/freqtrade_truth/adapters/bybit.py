@@ -264,4 +264,3 @@ def _from_milliseconds(value: int) -> datetime:
         return datetime.fromtimestamp(value / 1000, tz=UTC)
     except (OverflowError, OSError, ValueError) as exc:
         raise BybitResponseError("Bybit timestamp is outside supported range") from exc
-
