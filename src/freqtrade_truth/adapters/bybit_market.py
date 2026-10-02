@@ -311,9 +311,7 @@ def _require_object_list(
     items: list[Mapping[str, JsonValue]] = []
     for item in value:
         if not isinstance(item, dict):
-            raise BybitMarketPreflightError(
-                f"Bybit response field '{key}' must contain objects"
-            )
+            raise BybitMarketPreflightError(f"Bybit response field '{key}' must contain objects")
         items.append(item)
     return items
 
@@ -321,9 +319,7 @@ def _require_object_list(
 def _require_non_empty_str(payload: Mapping[str, JsonValue], key: str) -> str:
     value = payload.get(key)
     if not isinstance(value, str) or not value.strip():
-        raise BybitMarketPreflightError(
-            f"Bybit response field '{key}' must be a non-empty string"
-        )
+        raise BybitMarketPreflightError(f"Bybit response field '{key}' must be a non-empty string")
     return value
 
 
@@ -335,9 +331,7 @@ def _require_decimal_string(
     try:
         result = Decimal(value)
     except InvalidOperation as exc:
-        raise BybitMarketPreflightError(
-            f"Bybit response field '{key}' must be decimal"
-        ) from exc
+        raise BybitMarketPreflightError(f"Bybit response field '{key}' must be decimal") from exc
     if not result.is_finite():
         raise BybitMarketPreflightError(f"Bybit response field '{key}' must be finite")
     return result
@@ -346,7 +340,5 @@ def _require_decimal_string(
 def _require_cursor(payload: Mapping[str, JsonValue]) -> str:
     value = payload.get("nextPageCursor")
     if not isinstance(value, str):
-        raise BybitMarketPreflightError(
-            "Bybit response field 'nextPageCursor' must be a string"
-        )
+        raise BybitMarketPreflightError("Bybit response field 'nextPageCursor' must be a string")
     return value
