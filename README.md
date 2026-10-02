@@ -107,6 +107,36 @@ mypy
 pytest
 ```
 
+## Bybit smoke check
+
+After installation, a public credential-free check can verify the current inverse market contract:
+
+```bash
+freqtrade-truth bybit-check
+```
+
+The default output is intentionally redacted and contains market metadata only.
+
+Authenticated read-only account checks are opt-in. Credentials are accepted only through environment variables, never CLI flags:
+
+```bash
+export BYBIT_API_KEY="..."
+export BYBIT_API_SECRET="..."
+freqtrade-truth bybit-check --authenticated
+```
+
+On PowerShell:
+
+```powershell
+$env:BYBIT_API_KEY = "..."
+$env:BYBIT_API_SECRET = "..."
+freqtrade-truth bybit-check --authenticated
+```
+
+Authenticated mode first verifies that Bybit reports the key as read-only, then reads a bounded recent window from closed-PnL and transaction-log endpoints. It reports record counts only; it does not print trade IDs, order IDs, financial amounts, balances, or credentials.
+
+Use `--json` for the same redacted summary in machine-readable form. The smoke CLI has no order-placement, cancellation, leverage, transfer, or withdrawal path.
+
 ## Contributing
 
 Contributions are welcome once they satisfy the public-safety gate described in [CONTRIBUTING.md](CONTRIBUTING.md).
