@@ -40,6 +40,8 @@ Never add real secrets to issues, pull requests, commit messages, Actions logs, 
 
 Authenticated HTTP connections are permitted only over HTTPS or loopback HTTP. Redirects are not followed by the built-in transport, and credentials must never be embedded in URLs.
 
+For the Bybit smoke CLI, credentials are accepted only through environment variables. Authenticated mode is restricted to documented official Bybit API hosts, and the authenticated transport allowlists only the read endpoints required by the current project. Public diagnostics must not include real account identifiers, trade/order identifiers, balances, or financial amounts.
+
 ## Accidental disclosure
 
 If a secret or confidential value is ever committed:

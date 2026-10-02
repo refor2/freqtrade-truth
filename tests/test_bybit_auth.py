@@ -125,7 +125,7 @@ def test_boolean_query_values_use_lowercase_json_style() -> None:
     ):
         asyncio.run(
             transport().get_json(
-                "v5/example",
+                "v5/account/transaction-log",
                 {
                     "enabled": True,
                     "disabled": False,
@@ -133,7 +133,10 @@ def test_boolean_query_values_use_lowercase_json_style() -> None:
             )
         )
 
-    assert FakeHttpsConnection.instances[0].target == "/v5/example?enabled=true&disabled=false"
+    assert (
+        FakeHttpsConnection.instances[0].target
+        == "/v5/account/transaction-log?enabled=true&disabled=false"
+    )
 
 
 @pytest.mark.parametrize(
@@ -176,6 +179,7 @@ def test_transport_rejects_invalid_configuration(field: str, value: object) -> N
         "v5/position/closed-pnl?category=inverse",
         "v5/position/closed-pnl#fragment",
         "api/v3/example",
+        "v5/order/realtime",
     ],
 )
 def test_transport_rejects_unsafe_or_non_v5_paths(path: str) -> None:
@@ -185,7 +189,7 @@ def test_transport_rejects_unsafe_or_non_v5_paths(path: str) -> None:
 
 def test_negative_clock_value_is_rejected_before_network_request() -> None:
     with pytest.raises(ValueError, match="clock_ms"):
-        asyncio.run(transport(clock_ms=lambda: -1).get_json("v5/example"))
+        asyncio.run(transport(clock_ms=lambda: -1).get_json("v5/account/transaction-log"))
 
     assert FakeHttpsConnection.instances == []
 
@@ -198,7 +202,7 @@ def test_http_error_does_not_expose_credentials() -> None:
         FakeHttpsConnection,
     ):
         with pytest.raises(HttpTransportError) as exc_info:
-            asyncio.run(transport().get_json("v5/example"))
+            asyncio.run(transport().get_json("v5/account/transaction-log"))
 
     message = str(exc_info.value)
     assert "synthetic-api-key" not in message
@@ -214,7 +218,7 @@ def test_response_size_limit_is_enforced() -> None:
         FakeHttpsConnection,
     ):
         with pytest.raises(HttpTransportError, match="size limit"):
-            asyncio.run(transport(max_response_bytes=32).get_json("v5/example"))
+            asyncio.run(transport(max_response_bytes=32).get_json("v5/account/transaction-log"))
 
 
 def test_json_object_is_required() -> None:
@@ -225,4 +229,4 @@ def test_json_object_is_required() -> None:
         FakeHttpsConnection,
     ):
         with pytest.raises(HttpTransportError, match="JSON object"):
-            asyncio.run(transport().get_json("v5/example"))
+            asyncio.run(transport().get_json("v5/account/transaction-log"))

@@ -21,6 +21,10 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ### Security
 
+- Authenticated Bybit transport now allowlists only the read endpoints required by the project.
+- Authenticated CLI host selection is restricted to documented official Bybit API hosts.
+- CI GitHub Actions are pinned to immutable commit SHAs and the installed wheel CLI is smoke-tested.
+- Threat-model, dependency, and synthetic first-run reviews completed for the current pre-alpha scope.
 - CLI credentials are accepted only through environment variables and are redacted from known runtime errors.
 - Authenticated CLI output reports only bounded record counts and public market metadata, not account identifiers, trade IDs, balances, or financial amounts.
 - Bybit authenticated transport requires HTTPS and never includes credentials in its own exception messages.
