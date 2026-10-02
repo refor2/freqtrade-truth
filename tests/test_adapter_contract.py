@@ -7,6 +7,7 @@ from decimal import Decimal
 import pytest
 
 from freqtrade_truth.adapters.base import ReadOnlyTradeAdapter
+from freqtrade_truth.adapters.bybit import BybitInverseClosedPnlAdapter
 from freqtrade_truth.adapters.freqtrade import FreqtradeReadAdapter
 from freqtrade_truth.adapters.http import JsonObject
 from freqtrade_truth.core.models import (
@@ -68,7 +69,7 @@ class SyntheticReadAdapter:
         )
 
 
-class StaticTransport:
+class StaticFreqtradeTransport:
     async def get_json(
         self,
         path: str,
@@ -91,6 +92,34 @@ class StaticTransport:
             "trades_count": 1,
             "offset": 0,
             "total_trades": 1,
+        }
+
+
+class StaticBybitTransport:
+    async def get_json(
+        self,
+        path: str,
+        params: Mapping[str, str | int | bool] | None = None,
+    ) -> JsonObject:
+        del path, params
+        return {
+            "retCode": 0,
+            "retMsg": "OK",
+            "result": {
+                "category": "inverse",
+                "list": [
+                    {
+                        "symbol": "BTCUSD",
+                        "orderId": "synthetic-order",
+                        "updatedTime": "1893499200000",
+                        "closedPnl": "0.00120",
+                        "openFee": "0.00001",
+                        "closeFee": "0.00002",
+                    }
+                ],
+                "nextPageCursor": "",
+            },
+            "time": 0,
         }
 
 
@@ -118,7 +147,16 @@ CASES = (
     ),
     AdapterContractCase(
         name="freqtrade",
-        adapter=FreqtradeReadAdapter(StaticTransport()),
+        adapter=FreqtradeReadAdapter(StaticFreqtradeTransport()),
+        query=contract_query(),
+    ),
+    AdapterContractCase(
+        name="bybit-inverse",
+        adapter=BybitInverseClosedPnlAdapter(
+            StaticBybitTransport(),
+            symbol="BTCUSD",
+            settlement_currency="BTC",
+        ),
         query=contract_query(),
     ),
 )
