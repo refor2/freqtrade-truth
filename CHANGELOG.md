@@ -6,6 +6,8 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ### Added
 
+- Shared contract tests exercised across multiple read-only adapter implementations.
+- Commit metadata privacy gate for protected project identities.
 - Bounded, deterministic retry transport for transient HTTP 429/503 responses.
 - Retry-After support with a configured maximum delay cap.
 - Structured HTTP transport errors exposing status code and retry metadata.

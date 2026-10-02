@@ -28,8 +28,9 @@ Every change must pass all of the following checks before merge:
 3. **Data sanitization** — verify examples and fixtures are synthetic and contain no real identifiers, trades, balances, endpoints, or logs.
 4. **Private-IP / infrastructure review** — verify there are no production network details or deployment-specific values.
 5. **Strategy/IP review** — verify no private strategy, model, ranking, risk, admission, correlation, or proprietary research logic is present.
-6. **Diff review** — inspect the complete PR diff before merge.
-7. **Fail closed** — if there is uncertainty about whether information is safe to publish, do not publish it.
+6. **Commit metadata privacy** — protected project identities must use GitHub noreply addresses in reachable commit history.
+7. **Diff review** — inspect the complete PR diff before merge.
+8. **Fail closed** — if there is uncertainty about whether information is safe to publish, do not publish it.
 
 ## Local secrets
 

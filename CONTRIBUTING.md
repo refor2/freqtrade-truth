@@ -16,11 +16,13 @@ Before opening a pull request, read [SECURITY.md](SECURITY.md).
 4. Run:
    ```bash
    python scripts/public_safety_check.py
+   python scripts/commit_metadata_check.py
    ruff check .
    pytest
    ```
 5. Review the complete diff.
-6. Open a pull request and complete the public-safety checklist.
+6. Confirm protected project identities use a GitHub noreply commit address.
+7. Open a pull request and complete the public-safety checklist.
 
 ## Public data only
 

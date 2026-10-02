@@ -22,7 +22,7 @@ Status: in progress
 
 - [x] Freqtrade closed-trade reader.
 - [ ] First exchange settlement reader.
-- [ ] Adapter contract tests shared across implementations.
+- [x] Adapter contract tests shared across implementations.
 - [x] Freqtrade pagination and time-window handling.
 - [x] Bounded retry support for HTTP 429/503 with Retry-After handling.
 - [x] Stable source name and source trade reference for normalized Freqtrade records.

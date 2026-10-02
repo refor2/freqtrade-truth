@@ -1,9 +1,14 @@
 import asyncio
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from decimal import Decimal
 
+import pytest
+
 from freqtrade_truth.adapters.base import ReadOnlyTradeAdapter
+from freqtrade_truth.adapters.freqtrade import FreqtradeReadAdapter
+from freqtrade_truth.adapters.http import JsonObject
 from freqtrade_truth.core.models import (
     AdapterCapabilities,
     ClosedTradeQuery,
@@ -11,6 +16,14 @@ from freqtrade_truth.core.models import (
     NormalizedTradeRecord,
     SourceKind,
 )
+
+FINANCIAL_FIELD_ATTRS = {
+    FinancialField.PRICE_PNL: "price_pnl",
+    FinancialField.TRADING_FEES: "trading_fees",
+    FinancialField.FUNDING: "funding",
+    FinancialField.OTHER_ADJUSTMENTS: "other_adjustments",
+    FinancialField.REPORTED_NET_PNL: "reported_net_pnl",
+}
 
 
 class SyntheticReadAdapter:
@@ -55,21 +68,95 @@ class SyntheticReadAdapter:
         )
 
 
-def test_structural_adapter_protocol() -> None:
-    adapter = SyntheticReadAdapter()
+class StaticTransport:
+    async def get_json(
+        self,
+        path: str,
+        params: Mapping[str, str | int | bool] | None = None,
+    ) -> JsonObject:
+        del path, params
+        return {
+            "trades": [
+                {
+                    "trade_id": 1001,
+                    "pair": "BTC/USDT:USDT",
+                    "quote_currency": "USDT",
+                    "is_open": False,
+                    "open_timestamp": 1893484800000,
+                    "close_timestamp": 1893499200000,
+                    "profit_abs": Decimal("4.90"),
+                    "funding_fees": Decimal("-0.10"),
+                }
+            ],
+            "trades_count": 1,
+            "offset": 0,
+            "total_trades": 1,
+        }
 
-    assert isinstance(adapter, ReadOnlyTradeAdapter)
-    assert adapter.source_kind is SourceKind.EXCHANGE
+
+@dataclass(frozen=True, slots=True)
+class AdapterContractCase:
+    name: str
+    adapter: ReadOnlyTradeAdapter
+    query: ClosedTradeQuery
 
 
-def test_read_adapter_returns_normalized_records() -> None:
-    adapter = SyntheticReadAdapter()
-    query = ClosedTradeQuery(
+def contract_query() -> ClosedTradeQuery:
+    return ClosedTradeQuery(
         closed_from=datetime(2030, 1, 1, tzinfo=UTC),
         closed_until=datetime(2030, 1, 2, tzinfo=UTC),
+        instrument="BTC/USDT:USDT",
+        limit=10,
     )
 
-    records = asyncio.run(adapter.fetch_closed_trades(query))
 
-    assert len(records) == 1
-    assert records[0].reported_net_pnl == Decimal("4.90")
+CASES = (
+    AdapterContractCase(
+        name="synthetic",
+        adapter=SyntheticReadAdapter(),
+        query=contract_query(),
+    ),
+    AdapterContractCase(
+        name="freqtrade",
+        adapter=FreqtradeReadAdapter(StaticTransport()),
+        query=contract_query(),
+    ),
+)
+
+
+@pytest.mark.parametrize("case", CASES, ids=lambda case: case.name)
+def test_read_only_adapter_contract(case: AdapterContractCase) -> None:
+    adapter = case.adapter
+
+    assert isinstance(adapter, ReadOnlyTradeAdapter)
+    assert adapter.name.strip()
+    assert isinstance(adapter.source_kind, SourceKind)
+
+    capabilities = adapter.capabilities()
+    assert isinstance(capabilities, AdapterCapabilities)
+    assert capabilities.fields <= frozenset(FinancialField)
+
+    records = asyncio.run(adapter.fetch_closed_trades(case.query))
+
+    assert isinstance(records, Sequence)
+    assert len(records) <= (case.query.limit or len(records))
+
+    for record in records:
+        assert isinstance(record, NormalizedTradeRecord)
+        assert record.source_name == adapter.name
+        assert record.source_kind is adapter.source_kind
+        assert case.query.closed_from <= record.closed_at <= case.query.closed_until
+
+        if case.query.instrument is not None:
+            assert record.instrument == case.query.instrument
+
+        for financial_field, attribute in FINANCIAL_FIELD_ATTRS.items():
+            value = getattr(record, attribute)
+            if value is not None:
+                assert capabilities.supports(financial_field)
+
+
+def test_contract_cases_return_records() -> None:
+    for case in CASES:
+        records = asyncio.run(case.adapter.fetch_closed_trades(case.query))
+        assert records
