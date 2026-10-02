@@ -1,5 +1,7 @@
 # Threat model
 
+Last reviewed: 2026-10-02.
+
 ## Scope
 
 Freqtrade Truth is a read-only financial reconciliation project.
@@ -34,7 +36,9 @@ Threats:
 - credentials included in logs or exception messages,
 - accidental publication in fixtures or documentation,
 - credentials sent over plaintext remote HTTP,
-- credentials forwarded during redirects.
+- credentials forwarded during redirects,
+- credentials sent to an operator-supplied lookalike API host,
+- authenticated code gaining broader read access than its current purpose requires.
 
 Mitigations:
 
@@ -43,7 +47,28 @@ Mitigations:
 - public-safety CI scans tracked files for secret-like values,
 - authenticated non-loopback connections require HTTPS,
 - HTTP redirects are rejected rather than followed,
-- tests use placeholders only.
+- tests use placeholders only,
+- the authenticated CLI accepts only documented official Bybit HTTPS API hosts,
+- the authenticated Bybit transport allowlists only the read endpoints currently required by the project,
+- the CLI redacts configured Bybit credentials from known runtime errors and suppresses unexpected exception details.
+
+### Local environment and shell exposure
+
+Threats:
+
+- environment variables may be visible to other sufficiently privileged local processes,
+- shell history, debug tooling, process inspection, or operator-created traces can disclose sensitive runtime context.
+
+Mitigations:
+
+- credentials are not accepted as CLI arguments,
+- documentation recommends short-lived environment setup and cleanup,
+- authenticated CLI output is minimized to verification status and record counts,
+- real HTTP responses and financial records are not emitted by the smoke command.
+
+Residual risk:
+
+The project cannot protect credentials from a compromised host, privileged local process, debugger, shell extension, or terminal recorder. Host security remains a separate trust domain.
 
 ### Account mutation
 
@@ -133,6 +158,21 @@ Mitigations:
 - issue templates explicitly prohibit sensitive submissions,
 - fail closed when release safety is uncertain.
 
+### API-key permission drift and time-of-check/time-of-use
+
+Threat:
+
+A key verified as read-only could later be reconfigured, or a future code path could attempt to use a broader authenticated endpoint.
+
+Mitigations:
+
+- read-only status is checked during each authenticated smoke run,
+- the authenticated transport exposes GET only,
+- the authenticated transport restricts paths to an explicit endpoint allowlist,
+- no mutation methods exist in the public adapter contracts or CLI.
+
+The preflight does not make the exchange account immutable. Operators remain responsible for API-key lifecycle and permissions.
+
 ### Supply-chain compromise
 
 Threats:
@@ -147,7 +187,10 @@ Mitigations:
 - dependencies are minimal,
 - Dependabot tracks Python and Actions updates,
 - CI builds the distributable package before merge,
-- workflow permissions default to read-only contents access.
+- workflow permissions default to read-only contents access,
+- third-party GitHub Actions are pinned to immutable commit SHAs,
+- the built wheel is installed and its CLI entry points are exercised before merge,
+- the current runtime package declares no third-party runtime dependencies.
 
 ## Out of scope
 
@@ -172,3 +215,6 @@ The following should remain true across releases:
 5. No silent conversion of missing financial values to zero.
 6. No binary floating-point representation in normalized monetary values.
 7. No merge when the public-safety gate fails.
+8. No authenticated CLI request to an unapproved API host.
+9. No authenticated request outside the explicit read-endpoint allowlist.
+10. No credentials in default CLI output.
