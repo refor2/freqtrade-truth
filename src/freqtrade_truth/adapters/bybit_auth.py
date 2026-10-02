@@ -13,7 +13,7 @@ from http.client import HTTPException, HTTPResponse, HTTPSConnection
 from typing import cast
 from urllib.parse import urlencode, urlsplit
 
-from freqtrade_truth.adapters.http import HttpTransportError, JsonObject, JsonValue
+from freqtrade_truth.adapters.http import HttpTransportError, JsonObject
 
 _DEFAULT_RECV_WINDOW_MS = 5000
 _DEFAULT_TIMEOUT_SECONDS = 10.0
