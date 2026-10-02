@@ -114,7 +114,10 @@ class BybitInverseClosedPnlAdapter:
 
                 for raw_record in _require_object_list(result, "list"):
                     record = self._normalize_record(raw_record)
-                    if record.closed_at < query.closed_from or record.closed_at > query.closed_until:
+                    if (
+                        record.closed_at < query.closed_from
+                        or record.closed_at > query.closed_until
+                    ):
                         continue
                     if record.record_id in seen_record_ids:
                         raise BybitResponseError("Bybit returned a duplicate closed-PnL record")
