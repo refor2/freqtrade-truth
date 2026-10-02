@@ -156,6 +156,7 @@ def test_transport_requires_unambiguous_https_base_url(base_url: str) -> None:
     ("field", "value"),
     [
         ("api_key", ""),
+        ("api_key", "synthetic\napi-key"),
         ("api_secret", ""),
         ("recv_window_ms", 0),
         ("timeout_seconds", 0),
