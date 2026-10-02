@@ -7,7 +7,7 @@ from freqtrade_truth.adapters.bybit_preflight import (
     BybitApiKeySafetyError,
     verify_bybit_read_only_key,
 )
-from freqtrade_truth.adapters.http import JsonObject
+from freqtrade_truth.adapters.http import JsonObject, JsonValue
 
 
 class StaticTransport:
@@ -24,7 +24,7 @@ class StaticTransport:
         return self._payload
 
 
-def response(*, read_only: object = 1, ret_code: object = 0) -> JsonObject:
+def response(*, read_only: JsonValue = 1, ret_code: JsonValue = 0) -> JsonObject:
     return {
         "retCode": ret_code,
         "retMsg": "OK",
@@ -55,7 +55,7 @@ def test_read_write_key_fails_preflight() -> None:
 
 
 @pytest.mark.parametrize("read_only", [None, True, "1", 2])
-def test_invalid_read_only_flag_fails_closed(read_only: object) -> None:
+def test_invalid_read_only_flag_fails_closed(read_only: JsonValue) -> None:
     transport = StaticTransport(response(read_only=read_only))
 
     with pytest.raises(BybitApiKeySafetyError):
@@ -63,7 +63,7 @@ def test_invalid_read_only_flag_fails_closed(read_only: object) -> None:
 
 
 @pytest.mark.parametrize("ret_code", [True, "0", 10001])
-def test_invalid_or_unsuccessful_response_fails_closed(ret_code: object) -> None:
+def test_invalid_or_unsuccessful_response_fails_closed(ret_code: JsonValue) -> None:
     transport = StaticTransport(response(ret_code=ret_code))
 
     with pytest.raises(BybitApiKeySafetyError):
