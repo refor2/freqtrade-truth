@@ -5,6 +5,7 @@ from freqtrade_truth.adapters.bybit import (
     BybitInverseClosedPnlAdapter,
     BybitResponseError,
 )
+from freqtrade_truth.adapters.bybit_auth import BybitV5HmacTransport
 from freqtrade_truth.adapters.freqtrade import (
     FreqtradeReadAdapter,
     FreqtradeResponseError,
@@ -19,6 +20,7 @@ from freqtrade_truth.adapters.http import (
 __all__ = [
     "BybitInverseClosedPnlAdapter",
     "BybitResponseError",
+    "BybitV5HmacTransport",
     "FreqtradeReadAdapter",
     "FreqtradeResponseError",
     "HttpTransportError",
