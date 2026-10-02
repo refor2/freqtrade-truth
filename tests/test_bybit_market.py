@@ -148,11 +148,7 @@ def test_zero_or_multiple_matches_fail_closed() -> None:
         verify(StaticTransport([response([])]))
 
     with pytest.raises(BybitMarketPreflightError, match="exactly one"):
-        verify(
-            StaticTransport(
-                [response([instrument(), instrument(symbol="ETHUSD")])]
-            )
-        )
+        verify(StaticTransport([response([instrument(), instrument(symbol="ETHUSD")])]))
 
 
 def test_lists_inverse_trading_symbols_across_cursor_pages() -> None:
@@ -316,10 +312,7 @@ def test_public_transport_builds_v5_get_request_without_credentials() -> None:
     assert payload["retCode"] == 0
     connection = FakeHttpsConnection.instances[0]
     assert connection.method == "GET"
-    assert (
-        connection.target
-        == "/v5/market/instruments-info?category=inverse&symbol=BTCUSD"
-    )
+    assert connection.target == "/v5/market/instruments-info?category=inverse&symbol=BTCUSD"
     assert connection.headers == {"Accept": "application/json"}
     assert connection.closed
     assert connection.response.closed
