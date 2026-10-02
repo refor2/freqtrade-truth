@@ -11,6 +11,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from typing import TextIO
+from urllib.parse import urlsplit
 
 from freqtrade_truth.adapters.bybit import (
     BybitInverseClosedPnlAdapter,
@@ -37,6 +38,24 @@ from freqtrade_truth.core.models import ClosedTradeQuery
 _DEFAULT_BYBIT_BASE_URL = "https://api.bybit.com"
 _MAX_SMOKE_WINDOW_HOURS = 168
 _MAX_RECORD_LIMIT = 100
+_OFFICIAL_BYBIT_API_HOSTS = frozenset(
+    {
+        "api.bybit.com",
+        "api.bytick.com",
+        "api-testnet.bybit.com",
+        "api-demo.bybit.com",
+        "api.bybit.tr",
+        "api.bybit.kz",
+        "api.bybitgeorgia.ge",
+        "api.bybit.ae",
+        "api.bybit.eu",
+        "api.bybit.id",
+        "api.manepa.jp",
+        "api-testnet.manepa.jp",
+        "api.spark-fintech.com",
+        "api-testnet.spark-fintech.com",
+    }
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -73,6 +92,9 @@ async def run_bybit_check(
     environ: Mapping[str, str],
 ) -> dict[str, object]:
     """Run a public market preflight and optional authenticated read-only smoke check."""
+
+    if config.authenticated:
+        _require_official_bybit_base_url(config.base_url)
 
     public_transport = BybitV5PublicTransport(config.base_url)
     market = await verify_bybit_inverse_perpetual(
@@ -298,6 +320,23 @@ def _print_human_summary(result: Mapping[str, object], out: TextIO) -> None:
         )
     else:
         print("Account access: skipped (public-only mode)", file=out)
+
+
+def _require_official_bybit_base_url(base_url: str) -> None:
+    parsed = urlsplit(base_url)
+    if (
+        parsed.scheme != "https"
+        or parsed.hostname not in _OFFICIAL_BYBIT_API_HOSTS
+        or parsed.port is not None
+        or parsed.path not in ("", "/")
+        or parsed.query
+        or parsed.fragment
+        or parsed.username is not None
+        or parsed.password is not None
+    ):
+        raise ValueError(
+            "authenticated mode requires an official Bybit HTTPS API base URL"
+        )
 
 
 def _redact_message(message: str, environ: Mapping[str, str]) -> str:
