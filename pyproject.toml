@@ -34,7 +34,7 @@ Documentation = "https://github.com/refor2/freqtrade-truth/blob/main/README.md"
 dev = [
   "build>=1.2,<2",
   "mypy>=1.11,<2",
-  "pytest>=8,<9",
+  "pytest>=8,<10",
   "ruff>=0.8,<1",
 ]
 
