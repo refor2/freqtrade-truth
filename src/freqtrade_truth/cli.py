@@ -10,7 +10,6 @@ import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from decimal import Decimal
 from typing import TextIO
 
 from freqtrade_truth.adapters.bybit import (
@@ -248,7 +247,7 @@ def main(
         HttpTransportError,
         ValueError,
     ) as exc:
-        print(f"ERROR: {exc}", file=err)
+        print(f"ERROR: {_redact_message(str(exc), env)}", file=err)
         return 2
     except Exception as exc:  # pragma: no cover - defensive redaction boundary
         print(f"ERROR: unexpected {type(exc).__name__}", file=err)
@@ -301,10 +300,13 @@ def _print_human_summary(result: Mapping[str, object], out: TextIO) -> None:
         print("Account access: skipped (public-only mode)", file=out)
 
 
-def _decimal_to_string(value: Decimal) -> str:
-    """Keep a small explicit conversion helper available for future CLI fields."""
-
-    return str(value)
+def _redact_message(message: str, environ: Mapping[str, str]) -> str:
+    redacted = message
+    for variable in ("BYBIT_API_KEY", "BYBIT_API_SECRET"):
+        value = environ.get(variable, "")
+        if value:
+            redacted = redacted.replace(value, "[REDACTED]")
+    return redacted
 
 
 if __name__ == "__main__":
