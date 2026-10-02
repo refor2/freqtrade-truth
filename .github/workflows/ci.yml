@@ -17,6 +17,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v7
@@ -25,6 +27,9 @@ jobs:
 
       - name: Public safety check
         run: python scripts/public_safety_check.py
+
+      - name: Commit metadata privacy check
+        run: python scripts/commit_metadata_check.py
 
   static-quality:
     runs-on: ubuntu-latest
