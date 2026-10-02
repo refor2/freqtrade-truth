@@ -56,9 +56,9 @@ Status: in progress
 
 ### M5 — v0.1 release hardening
 
-- [ ] Threat-model review (initial threat model documented).
-- [ ] Dependency audit.
-- [ ] Documentation walkthrough using synthetic data.
+- [x] Threat-model review.
+- [x] Dependency audit.
+- [x] Documentation walkthrough using synthetic data.
 - [x] Reproducible release process.
 - [x] Changelog.
 - [ ] Signed/tagged release.
