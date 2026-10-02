@@ -41,16 +41,21 @@ No minimum Freqtrade release number is claimed yet.
 
 If an upstream version changes these fields or their semantics, the adapter must fail closed rather than guess.
 
-## Exchange adapters
+## Bybit
 
-No production exchange settlement adapter is part of the 0.0.1 preview.
+The first exchange-side reader targets Bybit V5 inverse-contract closed PnL:
 
-Future exchange adapters must publish:
+- `GET /v5/position/closed-pnl`
+- `category=inverse`
+- one explicitly configured symbol and settlement currency per adapter instance
 
-- the public API documentation used as their source,
-- the exact normalized field mapping,
-- known semantic limitations,
-- contract tests using synthetic fixtures.
+The implementation was reviewed against Bybit's public V5 documentation and inverse-contract P&L documentation on 2026-10-02.
+
+The adapter handles cursor pagination and splits longer queries into API-compliant time windows. It intentionally leaves funding and price-only PnL missing because the closed-PnL response does not provide those components separately.
+
+Authentication/request signing is not bundled into this first reader increment; callers provide a compatible read-only JSON transport.
+
+See [bybit-adapter.md](bybit-adapter.md) for the exact field mapping and limitations.
 
 ## Operating systems
 
