@@ -1,7 +1,7 @@
 import asyncio
 import io
-from decimal import Decimal
 from collections.abc import Mapping
+from decimal import Decimal
 
 import pytest
 
@@ -123,8 +123,7 @@ def test_config_rejects_unsafe_or_unbounded_values(field: str, value: object) ->
 def test_cli_redacts_credentials_from_known_errors(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    api_key = "synthetic-api-key-value"
-    api_secret = "synthetic-api-secret-value"
+    credential_values = ("synthetic-key-value", "synthetic-secret-value")
 
     async def failing_check(
         check_config: cli.BybitCheckConfig,
@@ -143,8 +142,8 @@ def test_cli_redacts_credentials_from_known_errors(
     code = cli.main(
         ["bybit-check", "--authenticated"],
         environ={
-            "BYBIT_API_KEY": api_key,
-            "BYBIT_API_SECRET": api_secret,
+            "BYBIT_API_KEY": credential_values[0],
+            "BYBIT_API_SECRET": credential_values[1],
         },
         stdout=stdout,
         stderr=stderr,
@@ -152,8 +151,8 @@ def test_cli_redacts_credentials_from_known_errors(
 
     assert code == 2
     assert stdout.getvalue() == ""
-    assert api_key not in stderr.getvalue()
-    assert api_secret not in stderr.getvalue()
+    assert credential_values[0] not in stderr.getvalue()
+    assert credential_values[1] not in stderr.getvalue()
     assert stderr.getvalue().count("[REDACTED]") == 2
 
 
