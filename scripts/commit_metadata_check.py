@@ -49,15 +49,13 @@ def find_violations(commits: list[CommitIdentity]) -> list[str]:
     findings: list[str] = []
 
     for commit in commits:
-        if (
-            commit.author_name in PROTECTED_IDENTITIES
-            and not is_allowed_noreply_email(commit.author_email)
+        if commit.author_name in PROTECTED_IDENTITIES and not is_allowed_noreply_email(
+            commit.author_email
         ):
             findings.append(f"{commit.sha}: protected author identity uses a non-noreply email")
 
-        if (
-            commit.committer_name in PROTECTED_IDENTITIES
-            and not is_allowed_noreply_email(commit.committer_email)
+        if commit.committer_name in PROTECTED_IDENTITIES and not is_allowed_noreply_email(
+            commit.committer_email
         ):
             findings.append(f"{commit.sha}: protected committer identity uses a non-noreply email")
 
