@@ -53,7 +53,7 @@ The foundation milestone defines contracts before integrations:
 - Python 3.11–3.14 CI,
 - linting, formatting, strict typing, tests, and publication-safety checks.
 
-See [docs/data-model.md](docs/data-model.md), [docs/freqtrade-adapter.md](docs/freqtrade-adapter.md), [docs/bybit-adapter.md](docs/bybit-adapter.md), [docs/compatibility.md](docs/compatibility.md), [docs/versioning.md](docs/versioning.md), and [ROADMAP.md](ROADMAP.md).
+See [docs/data-model.md](docs/data-model.md), [docs/freqtrade-adapter.md](docs/freqtrade-adapter.md), [docs/bybit-adapter.md](docs/bybit-adapter.md), [docs/compatibility.md](docs/compatibility.md), [docs/versioning.md](docs/versioning.md), [docs/first-run.md](docs/first-run.md), [docs/dependency-audit.md](docs/dependency-audit.md), and [ROADMAP.md](ROADMAP.md).
 
 ## Planned v0.1 scope
 
