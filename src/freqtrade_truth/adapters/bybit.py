@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from datetime import datetime
+from datetime import UTC, datetime
 from decimal import Decimal, InvalidOperation
 
 from freqtrade_truth.adapters.http import JsonHttpTransport, JsonObject, JsonValue
@@ -258,12 +258,7 @@ def _to_milliseconds(value: datetime) -> int:
 
 def _from_milliseconds(value: int) -> datetime:
     try:
-        return datetime.fromtimestamp(value / 1000, tz=query_utc())
+        return datetime.fromtimestamp(value / 1000, tz=UTC)
     except (OverflowError, OSError, ValueError) as exc:
         raise BybitResponseError("Bybit timestamp is outside supported range") from exc
 
-
-def query_utc():
-    from datetime import UTC
-
-    return UTC
