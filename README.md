@@ -44,6 +44,7 @@ The foundation milestone defines contracts before integrations:
 - GET-only Freqtrade closed-trade adapter with bounded pagination,
 - Bybit V5 inverse closed-PnL adapter with cursor pagination and seven-day window splitting,
 - GET-only Bybit V5 HMAC authenticated transport for runtime read access,
+- fail-closed Bybit API-key preflight requiring read-only mode,
 - dependency-free HTTP transport with optional Basic Auth,
 - bounded 429/503 retry policy with Retry-After support,
 - synthetic fixtures,
