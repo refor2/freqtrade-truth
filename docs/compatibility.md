@@ -55,6 +55,8 @@ The adapter handles cursor pagination and splits longer queries into API-complia
 
 The package includes a GET-only HMAC transport for Bybit V5 system-generated API keys. It requires HTTPS and follows the official timestamp + API key + receive-window + query-string signing rule.
 
+The Bybit integration also includes a separate inverse transaction-log ledger reader using `GET /v5/account/transaction-log` with cursor pagination and seven-day time windows. Ledger events remain separate from closed-trade records so funding can be reconciled later without premature attribution.
+
 See [bybit-adapter.md](bybit-adapter.md) for the exact field mapping and limitations.
 
 ## Operating systems
