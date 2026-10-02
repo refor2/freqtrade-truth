@@ -235,9 +235,7 @@ def test_long_query_is_split_into_seven_day_windows() -> None:
     end_at = datetime(2030, 1, 20, tzinfo=UTC)
     transport = RecordingTransport([response([]), response([]), response([])])
 
-    records = asyncio.run(
-        reader(transport).fetch(query(start_at=start_at, end_at=end_at))
-    )
+    records = asyncio.run(reader(transport).fetch(query(start_at=start_at, end_at=end_at)))
 
     assert records == ()
     assert len(transport.requests) == 3
