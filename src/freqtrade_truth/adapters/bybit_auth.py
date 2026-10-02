@@ -18,6 +18,13 @@ from freqtrade_truth.adapters.http import HttpTransportError, JsonObject
 _DEFAULT_RECV_WINDOW_MS = 5000
 _DEFAULT_TIMEOUT_SECONDS = 10.0
 _DEFAULT_MAX_RESPONSE_BYTES = 10 * 1024 * 1024
+_ALLOWED_AUTHENTICATED_PATHS = frozenset(
+    {
+        "v5/user/query-api",
+        "v5/position/closed-pnl",
+        "v5/account/transaction-log",
+    }
+)
 
 
 class BybitV5HmacTransport:
@@ -169,8 +176,8 @@ def _validate_api_path(path: str) -> str:
         raise ValueError("path must be a non-empty API path without query or fragment")
     if any(segment == ".." for segment in clean_path.split("/")):
         raise ValueError("path traversal is not allowed")
-    if not clean_path.startswith("v5/"):
-        raise ValueError("Bybit authenticated transport only permits v5 API paths")
+    if clean_path not in _ALLOWED_AUTHENTICATED_PATHS:
+        raise ValueError("Bybit authenticated transport path is not allowlisted")
     return clean_path
 
 
