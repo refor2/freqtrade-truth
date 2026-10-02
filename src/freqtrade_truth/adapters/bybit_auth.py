@@ -50,6 +50,8 @@ class BybitV5HmacTransport:
             raise ValueError("base_url must contain a hostname")
         if not api_key:
             raise ValueError("api_key must not be empty")
+        if "\r" in api_key or "\n" in api_key:
+            raise ValueError("api_key must be single-line")
         if not api_secret:
             raise ValueError("api_secret must not be empty")
         if recv_window_ms <= 0:
