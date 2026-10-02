@@ -21,7 +21,7 @@ Status: in progress
 ### M2 — Read adapters
 
 - [x] Freqtrade closed-trade reader.
-- [ ] First exchange settlement reader.
+- [x] First exchange settlement reader (Bybit inverse closed PnL).
 - [x] Adapter contract tests shared across implementations.
 - [x] Freqtrade pagination and time-window handling.
 - [x] Bounded retry support for HTTP 429/503 with Retry-After handling.

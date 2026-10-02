@@ -4,7 +4,7 @@
 
 Its goal is simple: make it easier to verify whether bot-side trade results match exchange-side financial settlement after fees, funding, and other supported adjustments are normalized.
 
-> Status: **pre-alpha preview**. The Freqtrade read path is implemented and test-covered; exchange settlement reconciliation is not yet implemented. Do not use this preview as the sole source for accounting or trading decisions.
+> Status: **pre-alpha preview**. Freqtrade and the first Bybit inverse closed-PnL read path are implemented and test-covered; reconciliation is not yet implemented. Do not use this preview as the sole source for accounting or trading decisions.
 
 ## Why
 
@@ -42,13 +42,14 @@ The foundation milestone defines contracts before integrations:
 - explicit missing values instead of silent zero defaults,
 - capability-aware read-only adapter protocol,
 - GET-only Freqtrade closed-trade adapter with bounded pagination,
+- Bybit V5 inverse closed-PnL adapter with cursor pagination and seven-day window splitting,
 - dependency-free HTTP transport with optional Basic Auth,
 - bounded 429/503 retry policy with Retry-After support,
 - synthetic fixtures,
 - Python 3.11–3.14 CI,
 - linting, formatting, strict typing, tests, and publication-safety checks.
 
-See [docs/data-model.md](docs/data-model.md), [docs/freqtrade-adapter.md](docs/freqtrade-adapter.md), [docs/compatibility.md](docs/compatibility.md), [docs/versioning.md](docs/versioning.md), and [ROADMAP.md](ROADMAP.md).
+See [docs/data-model.md](docs/data-model.md), [docs/freqtrade-adapter.md](docs/freqtrade-adapter.md), [docs/bybit-adapter.md](docs/bybit-adapter.md), [docs/compatibility.md](docs/compatibility.md), [docs/versioning.md](docs/versioning.md), and [ROADMAP.md](ROADMAP.md).
 
 ## Planned v0.1 scope
 

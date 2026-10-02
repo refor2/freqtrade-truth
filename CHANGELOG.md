@@ -6,6 +6,8 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ### Added
 
+- Bybit V5 inverse closed-PnL reader with explicit BTCUSD-style settlement currency, cursor pagination, and API-compliant time-window splitting.
+- Fail-closed Bybit normalization that preserves missing funding/price PnL instead of deriving unavailable components.
 - Shared contract tests exercised across multiple read-only adapter implementations.
 - Commit metadata privacy gate for protected project identities.
 - Bounded, deterministic retry transport for transient HTTP 429/503 responses.
