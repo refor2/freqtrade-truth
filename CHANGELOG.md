@@ -6,6 +6,7 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ### Added
 
+- Redacted `freqtrade-truth bybit-check` CLI with credential-free market verification and opt-in authenticated read-only smoke checks.
 - Credential-free Bybit inverse-market preflight and Trading-symbol discovery using public V5 instrument metadata.
 - Bybit inverse transaction-log ledger reader preserving funding, normalized fee signs, cash flow, and reported net change.
 - Fail-closed Bybit API-key preflight requiring the authenticated key to report read-only mode.
@@ -20,6 +21,8 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ### Security
 
+- CLI credentials are accepted only through environment variables and are redacted from known runtime errors.
+- Authenticated CLI output reports only bounded record counts and public market metadata, not account identifiers, trade IDs, balances, or financial amounts.
 - Bybit authenticated transport requires HTTPS and never includes credentials in its own exception messages.
 - Retries are limited by attempt count and maximum delay.
 - Non-configured HTTP failures are not retried.

@@ -24,6 +24,9 @@ classifiers = [
   "Topic :: Office/Business :: Financial",
 ]
 
+[project.scripts]
+freqtrade-truth = "freqtrade_truth.cli:main"
+
 [project.urls]
 Repository = "https://github.com/refor2/freqtrade-truth"
 Issues = "https://github.com/refor2/freqtrade-truth/issues"

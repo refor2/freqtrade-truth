@@ -31,6 +31,7 @@ Status: in progress
 - [x] Bounded retry support for HTTP 429/503 with Retry-After handling.
 - [x] Stable source name and source trade reference for normalized Freqtrade records.
 - [x] No live credentials required for unit tests.
+- [x] Redacted Bybit runtime smoke CLI with public-only default and opt-in read-only account checks.
 
 ### M3 — Deterministic reconciliation
 
