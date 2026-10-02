@@ -109,3 +109,31 @@ and requires the response to report:
 Any unsuccessful, malformed, or read/write response fails closed with `BybitApiKeySafetyError`.
 
 This check does not modify the API key. It only verifies the access mode reported by Bybit.
+
+## Transaction-log ledger reader
+
+`BybitInverseTransactionLogReader` reads:
+
+- `GET /v5/account/transaction-log`
+- `accountType=UNIFIED`
+- `category=inverse`
+- an explicit settlement currency such as `BTC`
+
+The transaction log is treated as a ledger stream, not as a closed-trade stream.
+
+This distinction is intentional: funding settlements can occur while a position is still open and may span multiple settlement events before the eventual close. The reader therefore preserves each source ledger event independently rather than attaching funding to a closed trade prematurely.
+
+Normalized signs:
+
+- Bybit `funding`: preserved as-is because positive means funding received and negative means funding paid.
+- Bybit `fee`: sign-inverted so project `trading_fees` is negative for an expense and positive for a rebate.
+- `cashFlow`: preserved as reported.
+- `change`: preserved as `reported_net_change`.
+
+When funding and fee are both present, the reader validates the documented identity:
+
+`change = cashFlow + funding + normalized_trading_fees`
+
+A mismatch fails closed.
+
+The reader follows cursor pagination, splits time ranges into API-compliant seven-day windows, filters other symbols locally, rejects duplicate source records and repeated cursors, and uses synthetic data only in tests.

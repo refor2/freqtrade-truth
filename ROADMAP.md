@@ -24,6 +24,7 @@ Status: in progress
 - [x] First exchange settlement reader (Bybit inverse closed PnL).
 - [x] Bybit GET-only HMAC authentication transport.
 - [x] Bybit read-only API-key preflight.
+- [x] Bybit inverse transaction-log ledger reader.
 - [x] Adapter contract tests shared across implementations.
 - [x] Freqtrade pagination and time-window handling.
 - [x] Bounded retry support for HTTP 429/503 with Retry-After handling.

@@ -10,6 +10,12 @@ from freqtrade_truth.adapters.bybit_preflight import (
     BybitApiKeySafetyError,
     verify_bybit_read_only_key,
 )
+from freqtrade_truth.adapters.bybit_transaction_log import (
+    BybitInverseTransactionLogReader,
+    BybitTransactionLogEntry,
+    BybitTransactionLogError,
+    BybitTransactionLogQuery,
+)
 from freqtrade_truth.adapters.freqtrade import (
     FreqtradeReadAdapter,
     FreqtradeResponseError,
@@ -25,6 +31,10 @@ __all__ = [
     "BybitInverseClosedPnlAdapter",
     "BybitResponseError",
     "BybitV5HmacTransport",
+    "BybitInverseTransactionLogReader",
+    "BybitTransactionLogEntry",
+    "BybitTransactionLogError",
+    "BybitTransactionLogQuery",
     "BybitApiKeySafetyError",
     "FreqtradeReadAdapter",
     "FreqtradeResponseError",

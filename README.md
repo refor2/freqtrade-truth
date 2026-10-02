@@ -45,6 +45,7 @@ The foundation milestone defines contracts before integrations:
 - Bybit V5 inverse closed-PnL adapter with cursor pagination and seven-day window splitting,
 - GET-only Bybit V5 HMAC authenticated transport for runtime read access,
 - fail-closed Bybit API-key preflight requiring read-only mode,
+- Bybit inverse transaction-log ledger reader for funding, fees, cash flow, and reported balance change,
 - dependency-free HTTP transport with optional Basic Auth,
 - bounded 429/503 retry policy with Retry-After support,
 - synthetic fixtures,
