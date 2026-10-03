@@ -16,6 +16,10 @@ It is used to validate:
 
 Breaking API changes are possible and must be documented.
 
+Preview reconciliation statuses, reason-code names, attribution contracts, and reporting schemas
+are not v0.1-stable until the explicit contract-stabilization gate is complete. Consumers should
+treat them as provisional and avoid persisting assumptions that cannot be migrated.
+
 ## 0.x
 
 Once the first complete reconciliation path exists, minor 0.x releases should keep public contracts increasingly stable.
