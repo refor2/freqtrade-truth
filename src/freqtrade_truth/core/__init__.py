@@ -8,6 +8,14 @@ from freqtrade_truth.core.comparison import (
     reconcile_group,
 )
 from freqtrade_truth.core.instruments import canonical_derivative_instrument
+from freqtrade_truth.core.ledger_evidence import (
+    FundingEvidenceReasonCode,
+    FundingEvidenceStatus,
+    FundingLedgerRecord,
+    FundingWindowEvidence,
+    LedgerCoverage,
+    collect_funding_window_evidence,
+)
 from freqtrade_truth.core.models import (
     AdapterCapabilities,
     ClosedTradeQuery,
@@ -22,6 +30,11 @@ from freqtrade_truth.core.reconciliation import (
 )
 
 __all__ = [
+    "FundingEvidenceReasonCode",
+    "FundingEvidenceStatus",
+    "FundingLedgerRecord",
+    "FundingWindowEvidence",
+    "LedgerCoverage",
     "FinancialFieldComparison",
     "ReconciliationGroupResult",
     "ReconciliationReasonCode",
@@ -36,4 +49,5 @@ __all__ = [
     "canonical_derivative_instrument",
     "group_comparable_records",
     "reconcile_group",
+    "collect_funding_window_evidence",
 ]
