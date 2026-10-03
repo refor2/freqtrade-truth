@@ -85,7 +85,16 @@ jobs:
         run: python -m pip install --force-reinstall dist/*.whl
 
       - name: Import smoke test
-        run: python -c "import freqtrade_truth; assert freqtrade_truth.__version__"
+        run: |
+          python - <<'PY'
+          import freqtrade_truth
+          import freqtrade_truth.adapters as adapters
+          import freqtrade_truth.core as core
+
+          assert freqtrade_truth.__version__
+          assert all(hasattr(adapters, name) for name in adapters.__all__)
+          assert all(hasattr(core, name) for name in core.__all__)
+          PY
 
       - name: Installed CLI smoke test
         run: |
