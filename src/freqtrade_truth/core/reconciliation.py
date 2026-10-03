@@ -25,14 +25,13 @@ class ReconciliationTolerance:
     def __post_init__(self) -> None:
         if self.close_time < timedelta(0):
             raise ValueError("close_time must not be negative")
-        for field_name in (
-            "price_pnl",
-            "trading_fees",
-            "funding",
-            "other_adjustments",
-            "reported_net_pnl",
+        for field_name, value in (
+            ("price_pnl", self.price_pnl),
+            ("trading_fees", self.trading_fees),
+            ("funding", self.funding),
+            ("other_adjustments", self.other_adjustments),
+            ("reported_net_pnl", self.reported_net_pnl),
         ):
-            value = getattr(self, field_name)
             if not value.is_finite() or value < 0:
                 raise ValueError(
                     f"{field_name} tolerance must be a finite non-negative Decimal"
