@@ -22,13 +22,15 @@ Official sources reviewed:
 | Bybit field | Normalized field | Rule |
 | --- | --- | --- |
 | `orderId` | `trade_ref` | preserved as source reference |
-| `symbol` | `instrument` | must match configured symbol |
+| `symbol` | source transport identity | must match configured symbol |
 | `updatedTime` | `closed_at` | milliseconds converted to UTC |
 | configured currency | `settlement_currency` | explicit, e.g. `BTC` for `BTCUSD` |
 | `openFee + closeFee` | `trading_fees` | sign inverted to project equity convention |
 | `closedPnl` | `reported_net_pnl` | preserved as exchange-reported net result |
 
 Bybit documents inverse contracts as settling in the underlying asset. The adapter therefore requires the settlement currency explicitly instead of guessing it from a symbol parser.
+
+For reconciliation, the adapter can also receive an explicit `normalized_instrument`. The public market preflight exposes this as `BybitInverseMarketInfo.normalized_instrument` using canonical `BASE/QUOTE:SETTLEMENT` form, for example `BTC/USD:BTC`. The exchange-native symbol is still used for Bybit requests and response validation; only the normalized record identity changes.
 
 ## Important semantic limitation
 
