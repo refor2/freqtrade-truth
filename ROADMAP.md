@@ -47,13 +47,19 @@ Status: in progress
 - [x] Fail-closed ledger evidence windows for funding candidates.
 - [ ] Guarded ledger attribution / enrichment for exchange components absent from closed-trade records.
 
+Contract hold: guarded attribution and the final externally visible reconciliation vocabulary
+remain preview-only until the v0.1 contract-stabilization gates in
+[issue #15](https://github.com/refor2/freqtrade-truth/issues/15) are complete.
+
 ### M4 — Reporting surface
+
+Status: blocked on v0.1 reconciliation contract stabilization.
 
 - [ ] Minimal read-only HTTP API.
 - [ ] Minimal reconciliation table.
 - [ ] JSON export.
 - [ ] CSV export.
-- [ ] Clear MATCH / REVIEW / INCOMPLETE states.
+- [ ] Clear versioned reconciliation states after contract stabilization; preview names are not v0.1-stable.
 - [ ] No trading or account-mutation controls.
 
 ### M5 — v0.1 release hardening

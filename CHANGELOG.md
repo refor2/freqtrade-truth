@@ -6,6 +6,8 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ### Added
 
+- Release-artifact integrity checks for package metadata, archive safety, typed-package marker, and build layout.
+- Mechanical read-only regression guards for public adapter methods, HTTP verbs, and CLI commands.
 - Fail-closed funding ledger evidence windows with explicit coverage, ambiguity, and candidate-funding states.
 - Canonical instrument identity support for accepted Bybit transaction-log records while preserving symbol-less events as ambiguous evidence.
 - Deterministic financial-field reconciliation results with MATCH / REVIEW / INCOMPLETE states and machine-readable reason codes.
