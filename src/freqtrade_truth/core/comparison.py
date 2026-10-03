@@ -136,12 +136,8 @@ def _group_result(
         settlement_currency=group.settlement_currency,
         status=status,
         reason_codes=reason_codes,
-        freqtrade_record_ids=tuple(
-            sorted(record.record_id for record in group.freqtrade_records)
-        ),
-        exchange_record_ids=tuple(
-            sorted(record.record_id for record in group.exchange_records)
-        ),
+        freqtrade_record_ids=tuple(sorted(record.record_id for record in group.freqtrade_records)),
+        exchange_record_ids=tuple(sorted(record.record_id for record in group.exchange_records)),
         comparisons=comparisons,
     )
 
