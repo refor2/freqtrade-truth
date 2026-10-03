@@ -33,9 +33,7 @@ class ReconciliationTolerance:
             ("reported_net_pnl", self.reported_net_pnl),
         ):
             if not value.is_finite() or value < 0:
-                raise ValueError(
-                    f"{field_name} tolerance must be a finite non-negative Decimal"
-                )
+                raise ValueError(f"{field_name} tolerance must be a finite non-negative Decimal")
 
     def for_field(self, field: FinancialField) -> Decimal:
         """Return the configured absolute tolerance for one financial field."""
