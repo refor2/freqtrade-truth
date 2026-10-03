@@ -1,5 +1,12 @@
 """Public normalized financial and reconciliation contracts."""
 
+from freqtrade_truth.core.comparison import (
+    FinancialFieldComparison,
+    ReconciliationGroupResult,
+    ReconciliationReasonCode,
+    ReconciliationStatus,
+    reconcile_group,
+)
 from freqtrade_truth.core.instruments import canonical_derivative_instrument
 from freqtrade_truth.core.models import (
     AdapterCapabilities,
@@ -15,6 +22,10 @@ from freqtrade_truth.core.reconciliation import (
 )
 
 __all__ = [
+    "FinancialFieldComparison",
+    "ReconciliationGroupResult",
+    "ReconciliationReasonCode",
+    "ReconciliationStatus",
     "AdapterCapabilities",
     "ClosedTradeQuery",
     "FinancialField",
@@ -24,4 +35,5 @@ __all__ = [
     "ReconciliationTolerance",
     "canonical_derivative_instrument",
     "group_comparable_records",
+    "reconcile_group",
 ]
