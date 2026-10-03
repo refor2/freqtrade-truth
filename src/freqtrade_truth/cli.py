@@ -146,12 +146,13 @@ async def run_bybit_check(
         authenticated_transport,
         symbol=config.symbol,
         settlement_currency=config.settle_coin,
+        normalized_instrument=market.normalized_instrument,
     )
     closed_records = await closed_reader.fetch_closed_trades(
         ClosedTradeQuery(
             closed_from=window_start,
             closed_until=window_end,
-            instrument=config.symbol,
+            instrument=market.normalized_instrument,
             limit=config.limit,
         )
     )
