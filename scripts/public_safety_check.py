@@ -16,7 +16,7 @@ SECRET_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("AWS access key", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
     (
         "URL-embedded credentials",
-        re.compile(r"""(?i)\bhttps?://[^\s/:@]+:[^\s/@]+@[^\s/]+"""),
+        re.compile(\n            r"""(?ix)\\bhttps?://[^\\s/:@]+:(?!placeholder@|redacted@|changeme@|dummy@|test@)[^\\s/@]+@[^\\s/]+"""\n        ),
     ),
     (
         "assigned secret",
