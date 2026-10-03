@@ -35,8 +35,8 @@ Status: in progress
 
 ### M3 — Deterministic reconciliation
 
-- [ ] Group comparable records.
-- [ ] Explicit tolerance policy.
+- [x] Group comparable records.
+- [x] Explicit tolerance policy.
 - [ ] Price PnL comparison.
 - [ ] Trading-fee comparison.
 - [ ] Funding comparison.
