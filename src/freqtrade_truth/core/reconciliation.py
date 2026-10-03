@@ -60,11 +60,61 @@ class ComparableRecordGroup:
     freqtrade_records: tuple[NormalizedTradeRecord, ...]
     exchange_records: tuple[NormalizedTradeRecord, ...]
 
+    def __post_init__(self) -> None:
+        if not self.instrument.strip():
+            raise ValueError("instrument must not be empty")
+        if (
+            not self.settlement_currency
+            or self.settlement_currency != self.settlement_currency.upper()
+        ):
+            raise ValueError("settlement_currency must be non-empty uppercase")
+        if not self.freqtrade_records and not self.exchange_records:
+            raise ValueError("record group must contain at least one record")
+
+        _validate_group_records(
+            self.freqtrade_records,
+            expected_kind=SourceKind.FREQTRADE,
+            field_name="freqtrade_records",
+            instrument=self.instrument,
+            settlement_currency=self.settlement_currency,
+        )
+        _validate_group_records(
+            self.exchange_records,
+            expected_kind=SourceKind.EXCHANGE,
+            field_name="exchange_records",
+            instrument=self.instrument,
+            settlement_currency=self.settlement_currency,
+        )
+
     @property
     def is_structurally_comparable(self) -> bool:
         """Whether the group has one bot trade and at least one exchange record."""
 
         return len(self.freqtrade_records) == 1 and bool(self.exchange_records)
+
+
+def _validate_group_records(
+    records: Sequence[NormalizedTradeRecord],
+    *,
+    expected_kind: SourceKind,
+    field_name: str,
+    instrument: str,
+    settlement_currency: str,
+) -> None:
+    seen: set[tuple[str, str]] = set()
+    for record in records:
+        if record.source_kind is not expected_kind:
+            raise ValueError(f"{field_name} contains a record with the wrong source kind")
+        if record.instrument != instrument:
+            raise ValueError(f"{field_name} contains a record with a different instrument")
+        if record.settlement_currency != settlement_currency:
+            raise ValueError(
+                f"{field_name} contains a record with a different settlement currency"
+            )
+        identity = (record.source_name, record.record_id)
+        if identity in seen:
+            raise ValueError(f"{field_name} contains a duplicate source record")
+        seen.add(identity)
 
 
 def group_comparable_records(
