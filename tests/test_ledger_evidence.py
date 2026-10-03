@@ -321,3 +321,64 @@ def test_ledger_input_order_does_not_change_evidence() -> None:
     )
 
     assert backward == forward
+
+
+def test_trade_window_boundaries_are_inclusive_with_exact_coverage() -> None:
+    opened_at, closed_at, _ = base_times()
+    target = group(
+        (trade("bot-1", opened_at=opened_at, closed_at=closed_at),),
+        (exchange("exchange-1", closed_at=closed_at),),
+    )
+    coverage = LedgerCoverage(start_at=opened_at, end_at=closed_at)
+    records = (
+        LedgerRecord(
+            record_id="funding-open",
+            instrument="BTC/USD:BTC",
+            settlement_currency="BTC",
+            occurred_at=opened_at,
+            funding=Decimal("0.001"),
+        ),
+        LedgerRecord(
+            record_id="funding-close",
+            instrument="BTC/USD:BTC",
+            settlement_currency="BTC",
+            occurred_at=closed_at,
+            funding=Decimal("-0.0004"),
+        ),
+    )
+
+    evidence = collect_funding_window_evidence(
+        target,
+        records,
+        coverage=coverage,
+    )
+
+    assert evidence.status is FundingEvidenceStatus.AVAILABLE
+    assert evidence.candidate_funding == Decimal("0.0006")
+    assert evidence.candidate_record_ids == ("funding-close", "funding-open")
+
+
+def test_zero_valued_funding_event_is_distinct_from_no_event() -> None:
+    opened_at, closed_at, coverage = base_times()
+    target = group(
+        (trade("bot-1", opened_at=opened_at, closed_at=closed_at),),
+        (exchange("exchange-1", closed_at=closed_at),),
+    )
+    zero_event = LedgerRecord(
+        record_id="funding-zero",
+        instrument="BTC/USD:BTC",
+        settlement_currency="BTC",
+        occurred_at=datetime(2030, 1, 1, 12, tzinfo=UTC),
+        funding=Decimal("0"),
+    )
+
+    evidence = collect_funding_window_evidence(
+        target,
+        (zero_event,),
+        coverage=coverage,
+    )
+
+    assert evidence.status is FundingEvidenceStatus.AVAILABLE
+    assert evidence.reason_codes == (FundingEvidenceReasonCode.FUNDING_EVENTS_FOUND,)
+    assert evidence.candidate_funding == Decimal("0")
+    assert evidence.candidate_record_ids == ("funding-zero",)
