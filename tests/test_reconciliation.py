@@ -22,9 +22,7 @@ def record(
     settlement_currency: str = "BTC",
 ) -> NormalizedTradeRecord:
     source_name = (
-        "synthetic-freqtrade"
-        if source_kind is SourceKind.FREQTRADE
-        else "synthetic-exchange"
+        "synthetic-freqtrade" if source_kind is SourceKind.FREQTRADE else "synthetic-exchange"
     )
     return NormalizedTradeRecord(
         record_id=record_id,
