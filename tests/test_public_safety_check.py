@@ -10,6 +10,7 @@ def run_safety_check(
     tmp_path: Path,
     files: dict[str, str],
 ) -> subprocess.CompletedProcess[str]:
+    tmp_path.mkdir(parents=True, exist_ok=True)
     scripts_dir = tmp_path / "scripts"
     scripts_dir.mkdir()
     shutil.copy2(SCRIPT_SOURCE, scripts_dir / "public_safety_check.py")
@@ -60,7 +61,7 @@ def test_tracked_environment_variant_fails_even_with_placeholder_content(
 def test_assigned_secret_fails(tmp_path: Path) -> None:
     result = run_safety_check(
         tmp_path,
-        {"config.toml": 'api_key = "synthetic-but-secret-shaped-value"\n'},
+        {"config.toml": 'api_key = "' + "synthetic-" + 'but-secret-shaped-value"\n'},
     )
 
     assert result.returncode == 1
@@ -70,7 +71,11 @@ def test_assigned_secret_fails(tmp_path: Path) -> None:
 def test_url_embedded_credentials_fail(tmp_path: Path) -> None:
     result = run_safety_check(
         tmp_path,
-        {"docs/example.md": "https://synthetic-user:synthetic-pass@example.invalid/path\n"},
+        {
+            "docs/example.md": (
+                "https://synthetic-user:" + "synthetic-pass" + "@example.invalid/path\n"
+            )
+        },
     )
 
     assert result.returncode == 1
@@ -80,7 +85,7 @@ def test_url_embedded_credentials_fail(tmp_path: Path) -> None:
 def test_private_ipv4_fails_but_public_ipv4_passes(tmp_path: Path) -> None:
     private_result = run_safety_check(
         tmp_path / "private",
-        {"docs/example.md": "Synthetic private address 10.23.45.67\n"},
+        {"docs/example.md": "Synthetic private address " + "10.23." + "45.67\n"},
     )
     public_result = run_safety_check(
         tmp_path / "public",
