@@ -1,9 +1,11 @@
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
+from itertools import permutations
 
 import pytest
 
 from freqtrade_truth.core import (
+    ComparableRecordGroup,
     FinancialField,
     NormalizedTradeRecord,
     ReconciliationTolerance,
@@ -195,3 +197,131 @@ def test_duplicate_or_wrong_source_input_fails_closed() -> None:
             [],
             tolerance=ReconciliationTolerance(),
         )
+
+
+def test_manual_group_enforces_source_identity_and_non_empty_component() -> None:
+    bot = record(SourceKind.FREQTRADE, "bot-1")
+    exchange = record(SourceKind.EXCHANGE, "exchange-1")
+
+    with pytest.raises(ValueError, match="at least one"):
+        ComparableRecordGroup(
+            instrument="BTC/USD:BTC",
+            settlement_currency="BTC",
+            freqtrade_records=(),
+            exchange_records=(),
+        )
+
+    with pytest.raises(ValueError, match="wrong source kind"):
+        ComparableRecordGroup(
+            instrument="BTC/USD:BTC",
+            settlement_currency="BTC",
+            freqtrade_records=(exchange,),
+            exchange_records=(),
+        )
+
+    with pytest.raises(ValueError, match="wrong source kind"):
+        ComparableRecordGroup(
+            instrument="BTC/USD:BTC",
+            settlement_currency="BTC",
+            freqtrade_records=(),
+            exchange_records=(bot,),
+        )
+
+
+def test_manual_group_rejects_mismatched_instrument_currency_and_duplicates() -> None:
+    bot = record(SourceKind.FREQTRADE, "bot-1")
+    other_instrument = record(
+        SourceKind.EXCHANGE,
+        "exchange-eth",
+        instrument="ETH/USD:ETH",
+        settlement_currency="ETH",
+    )
+    other_currency = record(
+        SourceKind.EXCHANGE,
+        "exchange-usd",
+        settlement_currency="USD",
+    )
+    exchange = record(SourceKind.EXCHANGE, "exchange-1")
+
+    with pytest.raises(ValueError, match="different instrument"):
+        ComparableRecordGroup(
+            instrument="BTC/USD:BTC",
+            settlement_currency="BTC",
+            freqtrade_records=(bot,),
+            exchange_records=(other_instrument,),
+        )
+
+    with pytest.raises(ValueError, match="different settlement currency"):
+        ComparableRecordGroup(
+            instrument="BTC/USD:BTC",
+            settlement_currency="BTC",
+            freqtrade_records=(bot,),
+            exchange_records=(other_currency,),
+        )
+
+    with pytest.raises(ValueError, match="duplicate"):
+        ComparableRecordGroup(
+            instrument="BTC/USD:BTC",
+            settlement_currency="BTC",
+            freqtrade_records=(bot,),
+            exchange_records=(exchange, exchange),
+        )
+
+
+def test_grouping_is_invariant_across_all_small_input_permutations() -> None:
+    bot_records = (
+        record(SourceKind.FREQTRADE, "bot-a", seconds=0),
+        record(SourceKind.FREQTRADE, "bot-b", seconds=20),
+    )
+    exchange_records = (
+        record(SourceKind.EXCHANGE, "exchange-a", seconds=1),
+        record(SourceKind.EXCHANGE, "exchange-b", seconds=21),
+    )
+    tolerance = ReconciliationTolerance(close_time=timedelta(seconds=2))
+    expected = group_comparable_records(
+        bot_records,
+        exchange_records,
+        tolerance=tolerance,
+    )
+
+    for bot_order in permutations(bot_records):
+        for exchange_order in permutations(exchange_records):
+            assert (
+                group_comparable_records(
+                    bot_order,
+                    exchange_order,
+                    tolerance=tolerance,
+                )
+                == expected
+            )
+
+
+def test_close_time_tolerance_boundary_is_inclusive_and_one_tick_outside_is_separate() -> None:
+    bot = record(SourceKind.FREQTRADE, "bot-1")
+    on_boundary = record(SourceKind.EXCHANGE, "exchange-boundary", seconds=2)
+    outside = NormalizedTradeRecord(
+        record_id="exchange-outside",
+        source_kind=SourceKind.EXCHANGE,
+        source_name="synthetic-exchange",
+        trade_ref="exchange-outside",
+        instrument="BTC/USD:BTC",
+        settlement_currency="BTC",
+        closed_at=bot.closed_at + timedelta(seconds=2, microseconds=1),
+    )
+    tolerance = ReconciliationTolerance(close_time=timedelta(seconds=2))
+
+    boundary_groups = group_comparable_records(
+        (bot,),
+        (on_boundary,),
+        tolerance=tolerance,
+    )
+    outside_groups = group_comparable_records(
+        (bot,),
+        (outside,),
+        tolerance=tolerance,
+    )
+
+    assert len(boundary_groups) == 1
+    assert boundary_groups[0].is_structurally_comparable
+    assert len(outside_groups) == 2
+    assert all(not group.is_structurally_comparable for group in outside_groups)
