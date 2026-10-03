@@ -1,5 +1,4 @@
 import freqtrade_truth.core as core
-
 from freqtrade_truth.adapters import (
     BybitApiKeySafetyError,
     BybitInverseClosedPnlAdapter,
