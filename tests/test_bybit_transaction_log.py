@@ -396,3 +396,48 @@ def test_query_requires_utc_and_valid_range() -> None:
             end_at=datetime(2030, 1, 2, tzinfo=UTC),
             limit=0,
         )
+
+
+def test_normalized_instrument_can_differ_from_exchange_symbol() -> None:
+    occurred_at = datetime(2030, 1, 1, 12, tzinfo=UTC)
+    transport = RecordingTransport(
+        [response([item(event_id="synthetic-event-1", occurred_at=occurred_at)])]
+    )
+    normalized = BybitInverseTransactionLogReader(
+        transport,
+        symbol="BTCUSD",
+        settlement_currency="BTC",
+        normalized_instrument="BTC/USD:BTC",
+    )
+
+    records = asyncio.run(normalized.fetch(query()))
+
+    assert len(records) == 1
+    assert records[0].instrument == "BTC/USD:BTC"
+
+
+def test_other_symbol_is_filtered_before_normalized_identity_is_applied() -> None:
+    occurred_at = datetime(2030, 1, 1, 12, tzinfo=UTC)
+    transport = RecordingTransport(
+        [
+            response(
+                [
+                    item(
+                        event_id="synthetic-event-1",
+                        occurred_at=occurred_at,
+                        symbol="ETHUSD",
+                    )
+                ]
+            )
+        ]
+    )
+    normalized = BybitInverseTransactionLogReader(
+        transport,
+        symbol="BTCUSD",
+        settlement_currency="BTC",
+        normalized_instrument="BTC/USD:BTC",
+    )
+
+    records = asyncio.run(normalized.fetch(query()))
+
+    assert records == ()
