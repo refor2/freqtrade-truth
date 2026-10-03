@@ -76,9 +76,7 @@ def test_adapter_http_requests_are_literal_get_only() -> None:
 def test_cli_exposes_only_reviewed_read_only_commands() -> None:
     parser = build_parser()
     subparser_actions = [
-        action
-        for action in parser._actions
-        if isinstance(action, argparse._SubParsersAction)
+        action for action in parser._actions if isinstance(action, argparse._SubParsersAction)
     ]
 
     assert len(subparser_actions) == 1
