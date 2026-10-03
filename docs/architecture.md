@@ -91,11 +91,19 @@ Adapters must:
 
 ## Core contract
 
-The core should remain deterministic and exchange-agnostic.
+The core remains deterministic and exchange-agnostic.
 
-Given normalized input records and an explicit tolerance policy, identical inputs must produce identical reconciliation results.
+Given normalized input records and an explicit tolerance policy, identical inputs must produce
+identical grouping and, as later comparison stages are added, identical reconciliation results.
 
-The reconciliation algorithm itself is deliberately not part of the foundation milestone.
+The first reconciliation stage groups records by exact canonical instrument and settlement
+currency, then connects opposite-source records whose close timestamps fall within the explicit
+close-time tolerance. Connected components are preserved intact. A component containing more
+than one Freqtrade record is therefore visible as ambiguous rather than being silently assigned
+by a nearest-record heuristic.
+
+Financial comparison stages build on the same explicit tolerance contract; they do not infer
+missing values or mutate source records.
 
 ## Missing data
 

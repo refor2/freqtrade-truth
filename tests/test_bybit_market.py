@@ -360,3 +360,22 @@ def test_public_transport_http_error_has_no_sensitive_context() -> None:
             asyncio.run(public_transport().get_json("v5/market/instruments-info"))
 
     assert str(exc_info.value) == "HTTP request failed with status 403"
+
+
+def test_market_info_exposes_canonical_derivative_instrument() -> None:
+    info = BybitInverseMarketInfo(
+        symbol="BTCUSD",
+        base_coin="BTC",
+        quote_coin="USD",
+        settle_coin="BTC",
+        contract_type="InversePerpetual",
+        status="Trading",
+        min_leverage=Decimal("1"),
+        max_leverage=Decimal("100"),
+        leverage_step=Decimal("0.01"),
+        min_order_qty=Decimal("1"),
+        qty_step=Decimal("1"),
+        tick_size=Decimal("0.1"),
+    )
+
+    assert info.normalized_instrument == "BTC/USD:BTC"

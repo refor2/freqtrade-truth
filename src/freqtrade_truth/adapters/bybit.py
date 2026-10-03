@@ -38,6 +38,7 @@ class BybitInverseClosedPnlAdapter:
         *,
         symbol: str,
         settlement_currency: str,
+        normalized_instrument: str | None = None,
         page_size: int = _MAX_PAGE_SIZE,
         source_name: str = "bybit",
     ) -> None:
@@ -45,6 +46,8 @@ class BybitInverseClosedPnlAdapter:
             raise ValueError("symbol must be a non-empty uppercase Bybit symbol")
         if not settlement_currency or settlement_currency != settlement_currency.upper():
             raise ValueError("settlement_currency must be non-empty uppercase")
+        if normalized_instrument is not None and not normalized_instrument.strip():
+            raise ValueError("normalized_instrument must not be empty when present")
         if page_size <= 0 or page_size > _MAX_PAGE_SIZE:
             raise ValueError(f"page_size must be between 1 and {_MAX_PAGE_SIZE}")
         if not source_name.strip():
@@ -53,6 +56,7 @@ class BybitInverseClosedPnlAdapter:
         self._transport = transport
         self._symbol = symbol
         self._settlement_currency = settlement_currency
+        self._normalized_instrument = normalized_instrument or symbol
         self._page_size = page_size
         self._source_name = source_name
 
@@ -78,7 +82,7 @@ class BybitInverseClosedPnlAdapter:
         self,
         query: ClosedTradeQuery,
     ) -> Sequence[NormalizedTradeRecord]:
-        if query.instrument is not None and query.instrument != self._symbol:
+        if query.instrument is not None and query.instrument != self._normalized_instrument:
             return ()
 
         start_ms = _to_milliseconds(query.closed_from)
@@ -167,7 +171,7 @@ class BybitInverseClosedPnlAdapter:
             source_kind=SourceKind.EXCHANGE,
             source_name=self.name,
             trade_ref=order_id,
-            instrument=symbol,
+            instrument=self._normalized_instrument,
             settlement_currency=self._settlement_currency,
             opened_at=None,
             closed_at=_from_milliseconds(updated_time),

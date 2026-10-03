@@ -335,3 +335,36 @@ def test_constructor_rejects_invalid_configuration(
             page_size=page_size,
             source_name=source_name,
         )
+
+
+def test_normalized_instrument_can_differ_from_exchange_symbol() -> None:
+    updated_at = datetime(2030, 1, 1, 12, tzinfo=UTC)
+    transport = RecordingTransport(
+        [response([closed_pnl_item(order_id="synthetic-order-1", updated_at=updated_at)])]
+    )
+    normalized = BybitInverseClosedPnlAdapter(
+        transport,
+        symbol="BTCUSD",
+        settlement_currency="BTC",
+        normalized_instrument="BTC/USD:BTC",
+    )
+
+    records = asyncio.run(normalized.fetch_closed_trades(query(instrument="BTC/USD:BTC")))
+
+    assert len(records) == 1
+    assert records[0].instrument == "BTC/USD:BTC"
+
+
+def test_normalized_instrument_mismatch_returns_empty_without_request() -> None:
+    transport = RecordingTransport([])
+    normalized = BybitInverseClosedPnlAdapter(
+        transport,
+        symbol="BTCUSD",
+        settlement_currency="BTC",
+        normalized_instrument="BTC/USD:BTC",
+    )
+
+    records = asyncio.run(normalized.fetch_closed_trades(query(instrument="BTCUSD")))
+
+    assert records == ()
+    assert transport.requests == []

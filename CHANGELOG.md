@@ -6,6 +6,9 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ### Added
 
+- Deterministic reconciliation grouping by canonical instrument, settlement currency, and explicit close-time tolerance; ambiguous many-to-many components remain visible instead of being guessed.
+- Explicit absolute financial tolerance contract for price PnL, trading fees, funding, other adjustments, and reported net PnL.
+- Canonical derivative instrument identity in `BASE/QUOTE:SETTLEMENT` form, including Bybit market-preflight support and optional normalized closed-PnL output.
 - Redacted `freqtrade-truth bybit-check` CLI with credential-free market verification and opt-in authenticated read-only smoke checks.
 - Credential-free Bybit inverse-market preflight and Trading-symbol discovery using public V5 instrument metadata.
 - Bybit inverse transaction-log ledger reader preserving funding, normalized fee signs, cash flow, and reported net change.
