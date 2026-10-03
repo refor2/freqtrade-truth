@@ -350,9 +350,7 @@ def test_normalized_instrument_can_differ_from_exchange_symbol() -> None:
     )
 
     records = asyncio.run(
-        normalized.fetch_closed_trades(
-            query(instrument="BTC/USD:BTC")
-        )
+        normalized.fetch_closed_trades(query(instrument="BTC/USD:BTC"))
     )
 
     assert len(records) == 1
