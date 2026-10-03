@@ -37,13 +37,14 @@ Status: in progress
 
 - [x] Group comparable records.
 - [x] Explicit tolerance policy.
-- [ ] Price PnL comparison.
-- [ ] Trading-fee comparison.
-- [ ] Funding comparison.
-- [ ] Reported net-PnL comparison.
-- [ ] Missing/incomplete-data outcome.
-- [ ] Machine-readable reason codes.
-- [ ] Deterministic unit and property-oriented tests.
+- [x] Price PnL comparison when both sides provide normalized values.
+- [x] Trading-fee comparison when both sides provide normalized values.
+- [x] Funding comparison when both sides provide normalized values.
+- [x] Reported net-PnL comparison when both sides provide normalized values.
+- [x] Missing/incomplete-data outcome.
+- [x] Machine-readable reason codes.
+- [x] Deterministic unit and property-oriented tests.
+- [ ] Ledger enrichment / attribution for exchange components absent from closed-trade records.
 
 ### M4 — Reporting surface
 
