@@ -65,6 +65,32 @@ Results expose machine-readable reason codes:
 
 Reason codes describe evidence; they do not guess at causes.
 
+## Funding ledger evidence
+
+Funding evidence is collected separately from final reconciliation attribution.
+
+A funding evidence window is considered usable only when:
+
+- the reconciliation group contains exactly one Freqtrade record and at least one exchange record,
+- the Freqtrade record has a known open time,
+- the declared ledger coverage fully spans the trade open/close interval,
+- funding events have the same settlement currency,
+- funding events expose the exact canonical instrument identity.
+
+Exact-instrument funding events inside the trade interval are summed with `Decimal` and returned
+as `candidate_funding`. This is evidence, not final ownership attribution.
+
+If a funding-bearing ledger event inside the interval has no instrument identity, the evidence is
+`AMBIGUOUS` and no funding total is claimed. If ledger coverage does not span the whole trade
+window, the evidence is `INCOMPLETE`; a partial sum is never returned.
+
+A complete window with no funding-bearing event returns `NO_EVENTS` with a zero candidate. This
+means no funding event was present in the supplied complete ledger window; it does not establish
+that a particular account or position ownership assumption is valid.
+
+The public core deliberately does not infer that every event for a symbol belongs to the bot.
+Guarded attribution remains a separate milestone.
+
 ## Bybit limitation
 
 The Bybit inverse closed-PnL endpoint provides reported closed PnL and, when present, opening and

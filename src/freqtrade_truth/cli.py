@@ -161,6 +161,7 @@ async def run_bybit_check(
         authenticated_transport,
         symbol=config.symbol,
         settlement_currency=config.settle_coin,
+        normalized_instrument=market.normalized_instrument,
     )
     ledger_records = await ledger_reader.fetch(
         BybitTransactionLogQuery(

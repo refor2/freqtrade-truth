@@ -123,6 +123,8 @@ This check does not modify the API key. It only verifies the access mode reporte
 
 The transaction log is treated as a ledger stream, not as a closed-trade stream.
 
+Like the closed-PnL adapter, the reader can receive an explicit `normalized_instrument`. Raw Bybit symbols are still used for response filtering; accepted symbol-bearing ledger records are then exposed with the canonical instrument identity. Symbol-less ledger records remain `None` so downstream evidence collection can treat them as ambiguous instead of guessing.
+
 This distinction is intentional: funding settlements can occur while a position is still open and may span multiple settlement events before the eventual close. The reader therefore preserves each source ledger event independently rather than attaching funding to a closed trade prematurely.
 
 Normalized signs:

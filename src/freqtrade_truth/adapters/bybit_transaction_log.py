@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal, InvalidOperation
 
@@ -62,6 +62,7 @@ class BybitInverseTransactionLogReader:
         *,
         symbol: str,
         settlement_currency: str,
+        normalized_instrument: str | None = None,
         page_size: int = _MAX_PAGE_SIZE,
         source_name: str = "bybit",
     ) -> None:
@@ -69,6 +70,8 @@ class BybitInverseTransactionLogReader:
             raise ValueError("symbol must be a non-empty uppercase Bybit symbol")
         if not settlement_currency or settlement_currency != settlement_currency.upper():
             raise ValueError("settlement_currency must be non-empty uppercase")
+        if normalized_instrument is not None and not normalized_instrument.strip():
+            raise ValueError("normalized_instrument must not be empty when present")
         if page_size <= 0 or page_size > _MAX_PAGE_SIZE:
             raise ValueError(f"page_size must be between 1 and {_MAX_PAGE_SIZE}")
         if not source_name.strip():
@@ -77,6 +80,7 @@ class BybitInverseTransactionLogReader:
         self._transport = transport
         self._symbol = symbol
         self._settlement_currency = settlement_currency
+        self._normalized_instrument = normalized_instrument or symbol
         self._page_size = page_size
         self._source_name = source_name
 
@@ -121,6 +125,11 @@ class BybitInverseTransactionLogReader:
                         )
                     if record.instrument is not None and record.instrument != self._symbol:
                         continue
+                    if (
+                        record.instrument is not None
+                        and self._normalized_instrument != self._symbol
+                    ):
+                        record = replace(record, instrument=self._normalized_instrument)
                     if record.occurred_at < query.start_at or record.occurred_at > query.end_at:
                         continue
                     if record.record_id in seen_record_ids:
