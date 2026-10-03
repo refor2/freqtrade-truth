@@ -75,39 +75,26 @@ def reconcile_group(
     """Compare one grouped set without inventing missing data or resolving ambiguity."""
 
     selected_fields = _normalize_fields(fields)
-    base = {
-        "instrument": group.instrument,
-        "settlement_currency": group.settlement_currency,
-        "freqtrade_record_ids": tuple(
-            sorted(record.record_id for record in group.freqtrade_records)
-        ),
-        "exchange_record_ids": tuple(
-            sorted(record.record_id for record in group.exchange_records)
-        ),
-    }
 
     if not group.freqtrade_records:
-        return ReconciliationGroupResult(
-            **base,
+        return _group_result(
+            group,
             status=ReconciliationStatus.INCOMPLETE,
             reason_codes=(ReconciliationReasonCode.MISSING_FREQTRADE_RECORD,),
-            comparisons=(),
         )
 
     if len(group.freqtrade_records) > 1:
-        return ReconciliationGroupResult(
-            **base,
+        return _group_result(
+            group,
             status=ReconciliationStatus.REVIEW,
             reason_codes=(ReconciliationReasonCode.AMBIGUOUS_FREQTRADE_RECORDS,),
-            comparisons=(),
         )
 
     if not group.exchange_records:
-        return ReconciliationGroupResult(
-            **base,
+        return _group_result(
+            group,
             status=ReconciliationStatus.INCOMPLETE,
             reason_codes=(ReconciliationReasonCode.MISSING_EXCHANGE_RECORD,),
-            comparisons=(),
         )
 
     freqtrade_record = group.freqtrade_records[0]
@@ -129,10 +116,32 @@ def reconcile_group(
     else:
         status = ReconciliationStatus.MATCH
 
-    return ReconciliationGroupResult(
-        **base,
+    return _group_result(
+        group,
         status=status,
         reason_codes=reason_codes,
+        comparisons=comparisons,
+    )
+
+
+def _group_result(
+    group: ComparableRecordGroup,
+    *,
+    status: ReconciliationStatus,
+    reason_codes: tuple[ReconciliationReasonCode, ...],
+    comparisons: tuple[FinancialFieldComparison, ...] = (),
+) -> ReconciliationGroupResult:
+    return ReconciliationGroupResult(
+        instrument=group.instrument,
+        settlement_currency=group.settlement_currency,
+        status=status,
+        reason_codes=reason_codes,
+        freqtrade_record_ids=tuple(
+            sorted(record.record_id for record in group.freqtrade_records)
+        ),
+        exchange_record_ids=tuple(
+            sorted(record.record_id for record in group.exchange_records)
+        ),
         comparisons=comparisons,
     )
 
