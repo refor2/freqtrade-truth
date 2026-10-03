@@ -1,6 +1,6 @@
+import tomllib
 from importlib.metadata import version
 from pathlib import Path
-import tomllib
 
 from freqtrade_truth import __version__
 
