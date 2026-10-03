@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
 from enum import StrEnum
 from typing import Protocol
@@ -90,10 +90,18 @@ def collect_funding_window_evidence(
 
     records = _validated_records(ledger_records, coverage)
 
-    if not group.is_structurally_comparable:
+    if len(group.freqtrade_records) > 1:
         return _evidence(
             group,
             status=FundingEvidenceStatus.AMBIGUOUS,
+            reason_codes=(
+                FundingEvidenceReasonCode.GROUP_NOT_STRUCTURALLY_COMPARABLE,
+            ),
+        )
+    if not group.freqtrade_records or not group.exchange_records:
+        return _evidence(
+            group,
+            status=FundingEvidenceStatus.INCOMPLETE,
             reason_codes=(
                 FundingEvidenceReasonCode.GROUP_NOT_STRUCTURALLY_COMPARABLE,
             ),
@@ -151,10 +159,7 @@ def collect_funding_window_evidence(
             candidate_funding=Decimal("0"),
         )
 
-    candidate_funding = sum(
-        (record.funding for record in candidates if record.funding is not None),
-        Decimal("0"),
-    )
+    candidate_funding = _sum_funding(candidates)
     return _evidence(
         group,
         status=FundingEvidenceStatus.AVAILABLE,
@@ -164,6 +169,16 @@ def collect_funding_window_evidence(
         candidate_funding=candidate_funding,
         candidate_record_ids=tuple(sorted(record.record_id for record in candidates)),
     )
+
+
+def _sum_funding(records: Sequence[FundingLedgerRecord]) -> Decimal:
+    total = Decimal("0")
+    for record in records:
+        value = record.funding
+        if value is None:
+            raise AssertionError("funding candidate unexpectedly missing funding value")
+        total += value
+    return total
 
 
 def _validated_records(
