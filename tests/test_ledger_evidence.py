@@ -151,9 +151,7 @@ def test_unknown_instrument_funding_event_makes_window_ambiguous() -> None:
     )
 
     assert evidence.status is FundingEvidenceStatus.AMBIGUOUS
-    assert evidence.reason_codes == (
-        FundingEvidenceReasonCode.UNKNOWN_INSTRUMENT_FUNDING_EVENT,
-    )
+    assert evidence.reason_codes == (FundingEvidenceReasonCode.UNKNOWN_INSTRUMENT_FUNDING_EVENT,)
     assert evidence.candidate_funding is None
     assert evidence.candidate_record_ids == ()
     assert evidence.ambiguous_record_ids == ("unknown-symbol",)
@@ -205,9 +203,7 @@ def test_incomplete_coverage_does_not_claim_zero_or_partial_funding() -> None:
     )
 
     assert evidence.status is FundingEvidenceStatus.INCOMPLETE
-    assert evidence.reason_codes == (
-        FundingEvidenceReasonCode.LEDGER_COVERAGE_INCOMPLETE,
-    )
+    assert evidence.reason_codes == (FundingEvidenceReasonCode.LEDGER_COVERAGE_INCOMPLETE,)
     assert evidence.candidate_funding is None
 
 
@@ -225,9 +221,7 @@ def test_missing_trade_open_time_is_incomplete() -> None:
     )
 
     assert evidence.status is FundingEvidenceStatus.INCOMPLETE
-    assert evidence.reason_codes == (
-        FundingEvidenceReasonCode.MISSING_FREQTRADE_OPEN_TIME,
-    )
+    assert evidence.reason_codes == (FundingEvidenceReasonCode.MISSING_FREQTRADE_OPEN_TIME,)
     assert evidence.window_start is None
     assert evidence.window_end == closed_at
 
@@ -251,8 +245,10 @@ def test_non_comparable_groups_do_not_attempt_attribution() -> None:
 
     assert ambiguous.status is FundingEvidenceStatus.AMBIGUOUS
     assert incomplete.status is FundingEvidenceStatus.INCOMPLETE
-    assert ambiguous.reason_codes == incomplete.reason_codes == (
-        FundingEvidenceReasonCode.GROUP_NOT_STRUCTURALLY_COMPARABLE,
+    assert (
+        ambiguous.reason_codes
+        == incomplete.reason_codes
+        == (FundingEvidenceReasonCode.GROUP_NOT_STRUCTURALLY_COMPARABLE,)
     )
 
 
