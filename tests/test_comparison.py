@@ -29,9 +29,7 @@ def record(
         record_id=record_id,
         source_kind=source_kind,
         source_name=(
-            "synthetic-freqtrade"
-            if source_kind is SourceKind.FREQTRADE
-            else "synthetic-exchange"
+            "synthetic-freqtrade" if source_kind is SourceKind.FREQTRADE else "synthetic-exchange"
         ),
         trade_ref=record_id,
         instrument="BTC/USD:BTC",
@@ -212,15 +210,11 @@ def test_structural_missing_record_states_are_explicit() -> None:
     )
 
     assert missing_exchange.status is ReconciliationStatus.INCOMPLETE
-    assert missing_exchange.reason_codes == (
-        ReconciliationReasonCode.MISSING_EXCHANGE_RECORD,
-    )
+    assert missing_exchange.reason_codes == (ReconciliationReasonCode.MISSING_EXCHANGE_RECORD,)
     assert missing_exchange.comparisons == ()
 
     assert missing_freqtrade.status is ReconciliationStatus.INCOMPLETE
-    assert missing_freqtrade.reason_codes == (
-        ReconciliationReasonCode.MISSING_FREQTRADE_RECORD,
-    )
+    assert missing_freqtrade.reason_codes == (ReconciliationReasonCode.MISSING_FREQTRADE_RECORD,)
     assert missing_freqtrade.comparisons == ()
 
 
@@ -235,9 +229,7 @@ def test_ambiguous_freqtrade_group_requires_review_without_guessing() -> None:
     )
 
     assert result.status is ReconciliationStatus.REVIEW
-    assert result.reason_codes == (
-        ReconciliationReasonCode.AMBIGUOUS_FREQTRADE_RECORDS,
-    )
+    assert result.reason_codes == (ReconciliationReasonCode.AMBIGUOUS_FREQTRADE_RECORDS,)
     assert result.comparisons == ()
 
 
