@@ -94,9 +94,7 @@ def collect_funding_window_evidence(
         return _evidence(
             group,
             status=FundingEvidenceStatus.AMBIGUOUS,
-            reason_codes=(
-                FundingEvidenceReasonCode.GROUP_NOT_STRUCTURALLY_COMPARABLE,
-            ),
+            reason_codes=(FundingEvidenceReasonCode.GROUP_NOT_STRUCTURALLY_COMPARABLE,),
         )
     if not group.freqtrade_records or not group.exchange_records:
         return _evidence(
@@ -133,16 +131,12 @@ def collect_funding_window_evidence(
         and record.funding is not None
     )
 
-    ambiguous = tuple(
-        sorted(record.record_id for record in relevant if record.instrument is None)
-    )
+    ambiguous = tuple(sorted(record.record_id for record in relevant if record.instrument is None))
     if ambiguous:
         return _evidence(
             group,
             status=FundingEvidenceStatus.AMBIGUOUS,
-            reason_codes=(
-                FundingEvidenceReasonCode.UNKNOWN_INSTRUMENT_FUNDING_EVENT,
-            ),
+            reason_codes=(FundingEvidenceReasonCode.UNKNOWN_INSTRUMENT_FUNDING_EVENT,),
             window_start=trade.opened_at,
             window_end=trade.closed_at,
             ambiguous_record_ids=ambiguous,
