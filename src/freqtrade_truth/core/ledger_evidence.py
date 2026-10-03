@@ -100,9 +100,7 @@ def collect_funding_window_evidence(
         return _evidence(
             group,
             status=FundingEvidenceStatus.INCOMPLETE,
-            reason_codes=(
-                FundingEvidenceReasonCode.GROUP_NOT_STRUCTURALLY_COMPARABLE,
-            ),
+            reason_codes=(FundingEvidenceReasonCode.GROUP_NOT_STRUCTURALLY_COMPARABLE,),
         )
 
     trade = group.freqtrade_records[0]
