@@ -15,6 +15,10 @@ SECRET_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("GitHub token", re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,}\b")),
     ("AWS access key", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
     (
+        "URL-embedded credentials",
+        re.compile(r"""(?i)\bhttps?://[^\s/:@]+:[^\s/@]+@[^\s/]+"""),
+    ),
+    (
         "assigned secret",
         re.compile(
             r"""(?ix)
@@ -82,6 +86,12 @@ def tracked_files() -> list[Path]:
     return [ROOT / item.decode("utf-8") for item in output.split(b"\0") if item]
 
 
+def has_prohibited_tracked_name(path: Path) -> bool:
+    if path.name in PROHIBITED_TRACKED_NAMES:
+        return True
+    return path.name.startswith(".env.") and path.name != ".env.example"
+
+
 def should_scan_content(path: Path) -> bool:
     rel = path.relative_to(ROOT).as_posix()
     if rel in EXCLUDED_CONTENT_PATHS:
@@ -111,7 +121,7 @@ def main() -> int:
     for path in tracked_files():
         rel = path.relative_to(ROOT).as_posix()
 
-        if path.name in PROHIBITED_TRACKED_NAMES:
+        if has_prohibited_tracked_name(path):
             findings.append(f"{rel}: prohibited tracked filename")
 
         if path.suffix.lower() in PROHIBITED_SUFFIXES:
