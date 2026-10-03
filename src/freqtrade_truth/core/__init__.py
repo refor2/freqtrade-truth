@@ -13,6 +13,11 @@ from freqtrade_truth.core.reconciliation import (
     ReconciliationTolerance,
     group_comparable_records,
 )
+from freqtrade_truth.core.reconciliation import (
+    ComparableRecordGroup,
+    ReconciliationTolerance,
+    group_comparable_records,
+)
 
 __all__ = [
     "AdapterCapabilities",
