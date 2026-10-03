@@ -4,7 +4,7 @@
 
 Its goal is simple: make it easier to verify whether bot-side trade results match exchange-side financial settlement after fees, funding, and other supported adjustments are normalized.
 
-> Status: **pre-alpha preview**. Freqtrade and the first Bybit inverse closed-PnL read path are implemented and test-covered; reconciliation is not yet implemented. Do not use this preview as the sole source for accounting or trading decisions.
+> Status: **pre-alpha preview**. Freqtrade and the first Bybit inverse read paths are implemented and test-covered. Deterministic grouping and normalized field comparison are implemented; exchange-ledger enrichment and reporting are still incomplete. Do not use this preview as the sole source for accounting or trading decisions.
 
 ## Why
 
@@ -53,7 +53,7 @@ The foundation milestone defines contracts before integrations:
 - Python 3.11–3.14 CI,
 - linting, formatting, strict typing, tests, and publication-safety checks.
 
-See [docs/data-model.md](docs/data-model.md), [docs/freqtrade-adapter.md](docs/freqtrade-adapter.md), [docs/bybit-adapter.md](docs/bybit-adapter.md), [docs/compatibility.md](docs/compatibility.md), [docs/versioning.md](docs/versioning.md), [docs/first-run.md](docs/first-run.md), [docs/dependency-audit.md](docs/dependency-audit.md), and [ROADMAP.md](ROADMAP.md).
+See [docs/data-model.md](docs/data-model.md), [docs/reconciliation.md](docs/reconciliation.md), [docs/freqtrade-adapter.md](docs/freqtrade-adapter.md), [docs/bybit-adapter.md](docs/bybit-adapter.md), [docs/compatibility.md](docs/compatibility.md), [docs/versioning.md](docs/versioning.md), [docs/first-run.md](docs/first-run.md), [docs/dependency-audit.md](docs/dependency-audit.md), and [ROADMAP.md](ROADMAP.md).
 
 ## Planned v0.1 scope
 

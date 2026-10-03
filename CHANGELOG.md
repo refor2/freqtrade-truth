@@ -6,6 +6,8 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ### Added
 
+- Deterministic financial-field reconciliation results with MATCH / REVIEW / INCOMPLETE states and machine-readable reason codes.
+- Exact Decimal aggregation across exchange-side partial records with fail-closed handling for missing components.
 - Deterministic reconciliation grouping by canonical instrument, settlement currency, and explicit close-time tolerance; ambiguous many-to-many components remain visible instead of being guessed.
 - Explicit absolute financial tolerance contract for price PnL, trading fees, funding, other adjustments, and reported net PnL.
 - Canonical derivative instrument identity in `BASE/QUOTE:SETTLEMENT` form, including Bybit market-preflight support and optional normalized closed-PnL output.
