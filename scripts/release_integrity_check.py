@@ -50,7 +50,11 @@ def _source_version() -> str:
     for node in tree.body:
         if not isinstance(node, ast.Assign):
             continue
-        if not any(isinstance(target, ast.Name) and target.id == "__version__" for target in node.targets):
+        has_version_target = any(
+            isinstance(target, ast.Name) and target.id == "__version__"
+            for target in node.targets
+        )
+        if not has_version_target:
             continue
         if isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
             return node.value.value
@@ -97,7 +101,7 @@ def _wheel_findings(wheel: Path, version: str) -> list[str]:
             findings.append(f"{wheel.name}: expected exactly one dist-info/METADATA")
         else:
             metadata = archive.read(metadata_names[0]).decode("utf-8")
-            if f"Name: freqtrade-truth\n" not in metadata:
+            if "Name: freqtrade-truth\n" not in metadata:
                 findings.append(f"{wheel.name}: package name metadata mismatch")
             if f"Version: {version}\n" not in metadata:
                 findings.append(f"{wheel.name}: package version metadata mismatch")
