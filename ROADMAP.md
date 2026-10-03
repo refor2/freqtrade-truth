@@ -44,7 +44,8 @@ Status: in progress
 - [x] Missing/incomplete-data outcome.
 - [x] Machine-readable reason codes.
 - [x] Deterministic unit and property-oriented tests.
-- [ ] Ledger enrichment / attribution for exchange components absent from closed-trade records.
+- [x] Fail-closed ledger evidence windows for funding candidates.
+- [ ] Guarded ledger attribution / enrichment for exchange components absent from closed-trade records.
 
 ### M4 — Reporting surface
 
