@@ -1,3 +1,5 @@
+import freqtrade_truth.core as core
+
 from freqtrade_truth.adapters import (
     BybitApiKeySafetyError,
     BybitInverseClosedPnlAdapter,
@@ -49,3 +51,9 @@ def test_preview_public_adapter_api_is_importable() -> None:
     }
 
     assert len(exported) == 21
+
+
+def test_preview_public_core_api_exports_are_unique_and_resolvable() -> None:
+    assert core.__all__
+    assert len(core.__all__) == len(set(core.__all__))
+    assert all(hasattr(core, name) for name in core.__all__)
