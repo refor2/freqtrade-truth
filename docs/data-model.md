@@ -56,6 +56,11 @@ Public fixtures use synthetic identifiers only.
 
 instrument is an adapter-normalized instrument label.
 
+For derivatives, the public canonical identity is `BASE/QUOTE:SETTLEMENT`, for example
+`BTC/USD:BTC`. Exchange-native symbols such as `BTCUSD` remain transport identifiers and
+must not be assumed to be comparable with a Freqtrade pair until an adapter has mapped them
+to the canonical identity.
+
 settlement_currency uses uppercase canonical form such as USDT, USD, or BTC.
 
 Cross-currency conversion is outside the foundation milestone.
