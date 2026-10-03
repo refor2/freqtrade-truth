@@ -17,6 +17,7 @@ from freqtrade_truth.adapters.http import (
     JsonObject,
     JsonValue,
 )
+from freqtrade_truth.core.instruments import canonical_derivative_instrument
 
 _DEFAULT_TIMEOUT_SECONDS = 10.0
 _DEFAULT_MAX_RESPONSE_BYTES = 2 * 1024 * 1024
@@ -42,6 +43,16 @@ class BybitInverseMarketInfo:
     min_order_qty: Decimal
     qty_step: Decimal
     tick_size: Decimal
+
+    @property
+    def normalized_instrument(self) -> str:
+        """Return the canonical derivative label for reconciliation."""
+
+        return canonical_derivative_instrument(
+            self.base_coin,
+            self.quote_coin,
+            self.settle_coin,
+        )
 
 
 class BybitV5PublicTransport:
