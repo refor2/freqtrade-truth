@@ -13,8 +13,12 @@ Releases are cut from the protected public `main` branch after all required chec
    ```bash
    python -m build
    ```
-7. Verify the wheel can be installed and imported in a clean environment.
-8. Review release notes for private or sensitive information.
+7. Run the release-artifact integrity gate:
+   ```bash
+   python scripts/release_integrity_check.py
+   ```
+8. Verify the wheel can be installed and imported in a clean environment.
+9. Review release notes for private or sensitive information.
 
 ## Tagging
 
