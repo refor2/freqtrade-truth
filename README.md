@@ -4,7 +4,7 @@
 
 Its goal is simple: make it easier to verify whether bot-side trade results match exchange-side financial settlement after fees, funding, and other supported adjustments are normalized.
 
-> Status: **pre-alpha preview**. Freqtrade and the first Bybit inverse read paths are implemented and test-covered. Deterministic grouping and normalized field comparison are implemented; exchange-ledger enrichment and reporting are still incomplete. Reconciliation status names, reason codes, attribution rules, and reporting contracts remain provisional until the v0.1 contract-stabilization gate is complete. Do not use this preview as the sole source for accounting or trading decisions.
+> Status: **pre-alpha preview**. Freqtrade and the first Bybit inverse read paths are implemented and test-covered. Deterministic grouping and normalized field comparison are implemented; exchange-ledger enrichment and reporting are still incomplete. Reconciliation status names, reason codes, attribution rules, and reporting contracts remain provisional until the [v0.1 contract-stabilization gate](https://github.com/refor2/freqtrade-truth/issues/15) is complete. Do not use this preview as the sole source for accounting or trading decisions.
 
 ## Why
 
