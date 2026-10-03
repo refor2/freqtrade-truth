@@ -51,8 +51,7 @@ def _source_version() -> str:
         if not isinstance(node, ast.Assign):
             continue
         has_version_target = any(
-            isinstance(target, ast.Name) and target.id == "__version__"
-            for target in node.targets
+            isinstance(target, ast.Name) and target.id == "__version__" for target in node.targets
         )
         if not has_version_target:
             continue
