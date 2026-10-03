@@ -108,9 +108,7 @@ def _validate_group_records(
         if record.instrument != instrument:
             raise ValueError(f"{field_name} contains a record with a different instrument")
         if record.settlement_currency != settlement_currency:
-            raise ValueError(
-                f"{field_name} contains a record with a different settlement currency"
-            )
+            raise ValueError(f"{field_name} contains a record with a different settlement currency")
         identity = (record.source_name, record.record_id)
         if identity in seen:
             raise ValueError(f"{field_name} contains a duplicate source record")
