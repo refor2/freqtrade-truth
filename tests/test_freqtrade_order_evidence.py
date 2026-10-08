@@ -13,7 +13,7 @@ from freqtrade_truth.adapters.freqtrade_order_evidence import (
     FreqtradeClosedTradeOrderReader,
     FreqtradeOrderEvidenceError,
 )
-from freqtrade_truth.adapters.http import JsonObject
+from freqtrade_truth.adapters.http import JsonObject, JsonValue
 from freqtrade_truth.core import (
     ComparableRecordGroup,
     FinancialField,
@@ -42,9 +42,19 @@ def trade_detail() -> JsonObject:
         "pair": "BTC/USD:BTC",
         "is_open": False,
         "orders": [
-            {"order_id": "EX-ENTRY-2", "pair": "BTC/USD:BTC"},
-            {"order_id": "EX-EXIT-1", "pair": "BTC/USD:BTC"},
-            {"order_id": "EX-ENTRY-1", "pair": "BTC/USD:BTC"},
+            {"order_id": "EX-ENTRY-2", "pair": "BTC/USD:BTC", "filled": Decimal("0.5")},
+            {
+                "order_id": "EX-EXIT-1",
+                "pair": "BTC/USD:BTC",
+                "filled": Decimal("0.1"),
+                "status": "canceled",
+            },
+            {
+                "order_id": "EX-ENTRY-1",
+                "pair": "BTC/USD:BTC",
+                "filled": Decimal("0"),
+                "status": "canceled",
+            },
         ],
     }
 
@@ -70,6 +80,9 @@ def test_order_evidence_is_read_only_and_deterministically_sorted() -> None:
         "EX-ENTRY-2",
         "EX-EXIT-1",
     )
+    assert snapshot.positive_fill_exchange_order_ids == ("EX-ENTRY-2", "EX-EXIT-1")
+    assert snapshot.zero_fill_exchange_order_ids == ("EX-ENTRY-1",)
+    assert snapshot.unknown_fill_exchange_order_ids == ()
 
 
 def test_empty_order_list_remains_empty_evidence_not_invented_link() -> None:
@@ -77,6 +90,38 @@ def test_empty_order_list_remains_empty_evidence_not_invented_link() -> None:
     payload["orders"] = []
     snapshot = read(SingleResponseTransport(payload))
     assert snapshot.observed_exchange_order_ids == ()
+
+
+def test_missing_and_null_fill_values_are_unknown_not_zero() -> None:
+    payload = trade_detail()
+    payload["orders"] = [
+        {"order_id": "EX-MISSING"},
+        {"order_id": "EX-NULL", "filled": None},
+        {"order_id": "EX-ZERO", "filled": 0},
+    ]
+    result = read(SingleResponseTransport(payload))
+    assert result.positive_fill_exchange_order_ids == ()
+    assert result.zero_fill_exchange_order_ids == ("EX-ZERO",)
+    assert result.unknown_fill_exchange_order_ids == ("EX-MISSING", "EX-NULL")
+
+
+def test_positive_fill_on_cancelled_order_is_not_discarded() -> None:
+    payload = trade_detail()
+    payload["orders"] = [
+        {"order_id": "EX-PARTIAL", "filled": Decimal("0.001"), "status": "canceled"},
+        {"order_id": "EX-CANCELLED", "filled": Decimal("0"), "status": "canceled"},
+    ]
+    result = read(SingleResponseTransport(payload))
+    assert result.positive_fill_exchange_order_ids == ("EX-PARTIAL",)
+    assert result.zero_fill_exchange_order_ids == ("EX-CANCELLED",)
+
+
+@pytest.mark.parametrize("bad_filled", [True, "1.2", Decimal("-0.1"), Decimal("Infinity")])
+def test_invalid_fill_amount_is_rejected(bad_filled: object) -> None:
+    payload = trade_detail()
+    payload["orders"] = [{"order_id": "EX-BAD", "filled": cast(JsonValue, bad_filled)}]
+    with pytest.raises(FreqtradeOrderEvidenceError, match="filled"):
+        read(SingleResponseTransport(payload))
 
 
 @pytest.mark.parametrize("trade_id", [0, -1, True, 1.0, "42"])

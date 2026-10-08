@@ -103,9 +103,23 @@ must explicitly describe the requested closed trade and contain an `orders`
 array with valid, unique exchange `order_id` references. All discrepancies
 fail closed; an empty order array yields **no observed references**.
 
-The resulting `observed_exchange_order_ids` can be checked against Bybit's
-`orderId` values from `GET /v5/position/closed-pnl` during future #15
-identity qualification. This is stronger candidate evidence than matching
+The snapshot preserves **all** `observed_exchange_order_ids`, and independently
+classifies their source-reported `filled` amounts:
+
+- `positive_fill_exchange_order_ids`: a finite, strictly positive observed fill amount,
+  including an order subsequently canceled after partial execution;
+- `zero_fill_exchange_order_ids`: an explicitly observed zero fill;
+- `unknown_fill_exchange_order_ids`: `filled` missing or `null` — never imputed as zero.
+
+Malformed, negative or non-finite fill amounts fail closed. The source `status` string
+alone does not determine whether an order executed: Freqtrade documents that a trade
+includes canceled orders too, and a partially executed order may later be canceled.
+
+Only positive-fill IDs are candidates for an executed-order link. The resulting
+`observed_exchange_order_ids` include non-executed and unknown-fill orders and therefore
+**must not** be used wholesale to claim an execution match. Comparing a positive-fill ID
+against Bybit's `orderId` values from `GET /v5/position/closed-pnl` is stronger
+candidate evidence than matching
 timestamps/amounts alone, but **does not itself prove** account scope,
 fill/execution ownership, completeness, attribution of funding/fees, or a
 reconciled final net result. No order IDs are persisted or printed by the
