@@ -106,7 +106,9 @@ class FreqtradeClosedTradeOrderReader:
             else:
                 filled = Decimal(raw_filled)
                 if not filled.is_finite() or filled < 0:
-                    raise FreqtradeOrderEvidenceError("order filled must be finite and non-negative")
+                    raise FreqtradeOrderEvidenceError(
+                        "order filled must be finite and non-negative"
+                    )
                 if filled == 0:
                     zero_fill_ids.add(order_id)
                 else:
