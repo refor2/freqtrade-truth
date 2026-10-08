@@ -43,8 +43,18 @@ def trade_detail() -> JsonObject:
         "is_open": False,
         "orders": [
             {"order_id": "EX-ENTRY-2", "pair": "BTC/USD:BTC", "filled": Decimal("0.5")},
-            {"order_id": "EX-EXIT-1", "pair": "BTC/USD:BTC", "filled": Decimal("0.1"), "status": "canceled"},
-            {"order_id": "EX-ENTRY-1", "pair": "BTC/USD:BTC", "filled": Decimal("0"), "status": "canceled"},
+            {
+                "order_id": "EX-EXIT-1",
+                "pair": "BTC/USD:BTC",
+                "filled": Decimal("0.1"),
+                "status": "canceled",
+            },
+            {
+                "order_id": "EX-ENTRY-1",
+                "pair": "BTC/USD:BTC",
+                "filled": Decimal("0"),
+                "status": "canceled",
+            },
         ],
     }
 
