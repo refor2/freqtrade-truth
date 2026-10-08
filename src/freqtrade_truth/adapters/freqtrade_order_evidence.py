@@ -7,6 +7,7 @@ Its types are deliberately not re-exported by the public adapter package.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from decimal import Decimal
 
 from freqtrade_truth.adapters.http import JsonHttpTransport, JsonValue
 
@@ -27,6 +28,9 @@ class FreqtradeClosedTradeOrderEvidence:
     trade_ref: str
     instrument: str
     observed_exchange_order_ids: tuple[str, ...]
+    positive_fill_exchange_order_ids: tuple[str, ...] = ()
+    zero_fill_exchange_order_ids: tuple[str, ...] = ()
+    unknown_fill_exchange_order_ids: tuple[str, ...] = ()
 
 
 class FreqtradeClosedTradeOrderReader:
@@ -72,6 +76,9 @@ class FreqtradeClosedTradeOrderReader:
             raise FreqtradeOrderEvidenceError("trade detail orders must be an array")
 
         order_ids: set[str] = set()
+        positive_fill_ids: set[str] = set()
+        zero_fill_ids: set[str] = set()
+        unknown_fill_ids: set[str] = set()
         for raw in raw_orders:
             if not isinstance(raw, dict):
                 raise FreqtradeOrderEvidenceError("trade detail order must be an object")
@@ -89,9 +96,28 @@ class FreqtradeClosedTradeOrderReader:
                 raise FreqtradeOrderEvidenceError("duplicate exchange order_id in trade detail")
             order_ids.add(order_id)
 
+            # Order history includes canceled and partly filled orders. A source-side
+            # order ID alone is not evidence that an economic execution occurred.
+            raw_filled = order.get("filled")
+            if raw_filled is None:
+                unknown_fill_ids.add(order_id)
+            elif isinstance(raw_filled, bool) or not isinstance(raw_filled, (int, Decimal)):
+                raise FreqtradeOrderEvidenceError("order filled must be numeric when present")
+            else:
+                filled = Decimal(raw_filled)
+                if not filled.is_finite() or filled < 0:
+                    raise FreqtradeOrderEvidenceError("order filled must be finite and non-negative")
+                if filled == 0:
+                    zero_fill_ids.add(order_id)
+                else:
+                    positive_fill_ids.add(order_id)
+
         return FreqtradeClosedTradeOrderEvidence(
             source_name=self._source_name,
             trade_ref=str(trade_id),
             instrument=instrument,
             observed_exchange_order_ids=tuple(sorted(order_ids)),
+            positive_fill_exchange_order_ids=tuple(sorted(positive_fill_ids)),
+            zero_fill_exchange_order_ids=tuple(sorted(zero_fill_ids)),
+            unknown_fill_exchange_order_ids=tuple(sorted(unknown_fill_ids)),
         )
