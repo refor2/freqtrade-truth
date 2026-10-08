@@ -13,7 +13,7 @@ from freqtrade_truth.adapters.freqtrade_order_evidence import (
     FreqtradeClosedTradeOrderReader,
     FreqtradeOrderEvidenceError,
 )
-from freqtrade_truth.adapters.http import JsonObject
+from freqtrade_truth.adapters.http import JsonObject, JsonValue
 from freqtrade_truth.core import (
     ComparableRecordGroup,
     FinancialField,
@@ -109,7 +109,7 @@ def test_positive_fill_on_cancelled_order_is_not_discarded() -> None:
 @pytest.mark.parametrize("bad_filled", [True, "1.2", Decimal("-0.1"), Decimal("Infinity")])
 def test_invalid_fill_amount_is_rejected(bad_filled: object) -> None:
     payload = trade_detail()
-    payload["orders"] = [{"order_id": "EX-BAD", "filled": bad_filled}]  # type: ignore[dict-item]
+    payload["orders"] = [{"order_id": "EX-BAD", "filled": cast(JsonValue, bad_filled)}]
     with pytest.raises(FreqtradeOrderEvidenceError, match="filled"):
         read(SingleResponseTransport(payload))
 
