@@ -8,6 +8,7 @@ from decimal import Decimal
 import pytest
 
 from freqtrade_truth.adapters.freqtrade_order_evidence import (
+    FreqtradeClosedTradeOrderEvidence,
     FreqtradeClosedTradeOrderReader,
     FreqtradeOrderEvidenceError,
 )
@@ -47,7 +48,7 @@ def trade_detail() -> JsonObject:
     }
 
 
-def read(transport: SingleResponseTransport) -> object:
+def read(transport: SingleResponseTransport) -> FreqtradeClosedTradeOrderEvidence:
     return asyncio.run(
         FreqtradeClosedTradeOrderReader(transport, source_name="synthetic-bot").fetch(
             42, expected_instrument="BTC/USD:BTC"
