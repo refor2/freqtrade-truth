@@ -91,3 +91,32 @@ The adapter does not silently skip malformed closed trades.
 Unit tests use synthetic JSON pages only.
 
 No live bot, exchange account, API credential, production endpoint, or real trade history is required by the test suite.
+
+## Provisional exchange-order references for identity review (#15)
+
+The isolated `FreqtradeClosedTradeOrderReader` is a candidate-evidence helper,
+**not** part of the stable public financial or attribution contract.
+
+It reads only Freqtrade's documented `GET /api/v1/trade/<tradeid>` endpoint for
+a caller-provided trade ID and expected canonical instrument. The response
+must explicitly describe the requested closed trade and contain an `orders`
+array with valid, unique exchange `order_id` references. All discrepancies
+fail closed; an empty order array yields **no observed references**.
+
+The resulting `observed_exchange_order_ids` can be checked against Bybit's
+`orderId` values from `GET /v5/position/closed-pnl` during future #15
+identity qualification. This is stronger candidate evidence than matching
+timestamps/amounts alone, but **does not itself prove** account scope,
+fill/execution ownership, completeness, attribution of funding/fees, or a
+reconciled final net result. No order IDs are persisted or printed by the
+reader, and the core's preview `MATCH` result is unchanged.
+
+Official references:
+- https://www.freqtrade.io/en/stable/rest-api/
+- https://www.freqtrade.io/en/stable/trade-object/
+- https://bybit-exchange.github.io/docs/v5/position/close-pnl
+
+The associated synthetic regression includes one explicitly expected-to-fail
+final-identity assertion. That marked debt is a **v0.1 blocker**, not a
+financial-correctness PASS, until #15 accepts and implements a verified
+cross-source identity/ownership contract.
