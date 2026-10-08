@@ -4,6 +4,7 @@ import asyncio
 from dataclasses import replace
 from datetime import UTC, datetime
 from decimal import Decimal
+from typing import cast
 
 import pytest
 
@@ -84,7 +85,7 @@ def test_invalid_trade_id_is_rejected_before_request(trade_id: object) -> None:
     with pytest.raises(ValueError, match="positive integer"):
         asyncio.run(
             FreqtradeClosedTradeOrderReader(transport).fetch(
-                trade_id, expected_instrument="BTC/USD:BTC"  # type: ignore[arg-type]
+                cast(int, trade_id), expected_instrument="BTC/USD:BTC"
             )
         )
     assert transport.paths == []
