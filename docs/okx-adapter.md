@@ -3,9 +3,11 @@
 This module adds an **independent OKX adapter** while retaining Bybit. It reads
 `GET /api/v5/account/positions-history` only through the injected
 `JsonHttpTransport` interface. No account credentials or production connection
-are needed for tests. A caller may supply a separate authorized, GET-only OKX
-transport from its environment; the library **does not** yet include an OKX
-authenticated REST signer or an OKX account-key validation workflow.
+are needed for tests. The optional `OkxV5ReadOnlyHmacTransport` now signs requests **only** for
+that exact GET path and only for the documented `www.okx.com` HTTPS host.
+Callers must independently issue a Read-only key and confirm the exact
+regional OKX endpoint they are allowed to use. The public package does
+not verify an account key's permission flags or provide a turnkey CLI.
 
 ## Supported now
 
@@ -52,10 +54,39 @@ adapter = OkxPositionHistoryAdapter(
 # Await adapter.fetch_closed_trades(ClosedTradeQuery(...)).
 ```
 
-The named transport is an **integration placeholder**: the private MyOKX
-reader is not part of the public package. An OSS user must supply its own
-read-authorized OKX `JsonHttpTransport`; no turnkey authenticated OKX CLI
-is claimed yet.
+Example with a separately created **Read-permission** OKX key and a verified
+instrument/settlement mapping (synthetic identifiers shown):
+
+```python
+import os
+from freqtrade_truth.adapters.okx_auth import OkxV5ReadOnlyHmacTransport
+from freqtrade_truth.adapters.okx_positions_history import OkxPositionHistoryAdapter
+
+transport = OkxV5ReadOnlyHmacTransport(
+    api_key=os.environ["OKX_READ_API_KEY"],
+    api_secret=os.environ["OKX_READ_API_SECRET"],
+    api_passphrase=os.environ["OKX_READ_API_PASSPHRASE"],
+)
+adapter = OkxPositionHistoryAdapter(
+    transport,
+    inst_id="BTC-USD-SWAP",
+    inst_type="SWAP",
+    settlement_currency="BTC",
+    normalized_instrument="BTC/USD:BTC",
+)
+# await adapter.fetch_closed_trades(ClosedTradeQuery(...))
+```
+
+The signer supports **only** `GET /api/v5/account/positions-history`.
+Any attempt to use a trade/withdrawal path, URL credentials, redirects or
+non-official host is rejected; no POST support exists. It is still not
+capable of proving that the key itself has only Read permissions, so
+use an independently configured read-only account key and appropriate
+IP restrictions. The authenticated source endpoint is not accessible from
+every location. A 2026-10-21 public `/api/v5/public/instruments` smoke request
+from the project's development NUC returned HTTP 403, so **no successful
+live OKX account-read claim is made**.
+The private MyOKX reader remains outside public OSS.
 
 ### Integration with private BOT OPS UI
 
