@@ -2,6 +2,14 @@
 
 Releases are cut from the protected public `main` branch after all required checks pass.
 
+**0.0.2 pre-alpha candidate:** the unified Bybit source evidence, offline demo and
+CCXT dated settlement corrections can be built and tested independently. A
+successful CI run or a new package version **does not mean a GitHub tag or release
+exists**. First verify GitHub's `main` protection (issue #18) and source
+identity limitations (issue #15), and then cut the release. Numerical `MATCH`
+remains preview-only, never verified economic ownership.
+
+
 ## Before tagging
 
 1. Confirm the target commit is on `main`.

@@ -368,3 +368,48 @@ def test_normalized_instrument_mismatch_returns_empty_without_request() -> None:
 
     assert records == ()
     assert transport.requests == []
+
+
+@pytest.mark.parametrize(
+    "execution_type",
+    (
+        "BustTrade",
+        "SessionSettlePnL",
+        "Settle",
+        "MovePosition",
+        "CorporateAction",
+        "new-unknown-event",
+    ),
+)
+def test_non_trade_closed_pnl_exec_type_fails_closed(execution_type: str) -> None:
+    """Exchange settlement/correction records must not masquerade as a closed trade."""
+    item = closed_pnl_item(
+        order_id="synthetic-nontrade-event",
+        updated_at=datetime(2030, 1, 1, 12, tzinfo=UTC),
+    )
+    item["execType"] = execution_type
+    transport = RecordingTransport([response([item])])
+
+    with pytest.raises(BybitResponseError, match="execType"):
+        asyncio.run(adapter(transport).fetch_closed_trades(query()))
+
+
+def test_explicit_trade_exec_type_preserves_net_independently_of_fees() -> None:
+    """Closed PnL already includes costs: do not calculate net minus fees again."""
+    item = closed_pnl_item(
+        order_id="synthetic-trade",
+        updated_at=datetime(2030, 1, 1, 12, tzinfo=UTC),
+        closed_pnl="0.00103",
+        open_fee="0.00008",
+        close_fee="-0.00002",
+    )
+    item["execType"] = "Trade"
+    records = asyncio.run(
+        adapter(RecordingTransport([response([item])])).fetch_closed_trades(query())
+    )
+
+    assert len(records) == 1
+    assert records[0].reported_net_pnl == Decimal("0.00103")
+    assert records[0].trading_fees == Decimal("-0.00006")
+    assert records[0].funding is None
+    assert records[0].price_pnl is None

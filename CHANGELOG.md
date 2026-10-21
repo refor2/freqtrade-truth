@@ -2,7 +2,46 @@
 
 All notable public changes to Freqtrade Truth are documented here.
 
-## Unreleased
+## Unreleased — 0.0.2 pre-alpha release candidate (tag pending)
+
+The 0.0.2 code integrates the independent Bybit/Freqtrade evidence drafts and
+the previously merged offline demo. This **does not** finalize v0.1 financial
+identity/ownership semantics: numerical `MATCH` is a preview-only field
+comparison, never proof of shared economic trade ownership. See issue #15.
+
+### Added
+
+- Source-only positive-filled Freqtrade order candidates and read-only Bybit
+  unique `execId` execution evidence for partial fills.
+- Exhaustive source cursor pagination evidence with explicit incomplete-window
+  failure; this does **not** prove retained full account history.
+- Candidate-only Bybit transaction-log fee corroboration, three-source
+  order/execution/ledger checks and non-ownership safety restrictions.
+- Fully offline `freqtrade-truth demo [--json]` with synthetic numerical
+  matches, mismatches and unknowns; installed CLI smoke test in CI.
+- Regression tests preventing a positive-filled order with no exchange
+  executions from being accepted as a complete candidate.
+
+### Fixed
+
+- Preserve the difference between source-native Bybit closed-PnL and already
+  included fees/funding; exclude non-Trade closed-PnL events.
+- Treat observed `funding=0` on TRADE fee records as zero, not a nonzero
+  funding charge.
+- For CCXT dated contracts such as `BTC/USD:USD-310404`, normalize
+  settlement currency as `USD` while keeping the complete instrument identity.
+
+### Limitations / Release gate
+
+- No cross-source authoritative bot/account/position ownership or complete
+  ledger lifecycle proof; no financial `MATCH` verification, fee/funding
+  attribution, real-account end-to-end evidence or stable v0.1 financial API.
+- Read-only public Bybit inverse adapter only, not an OKX/MyOKX settlement
+  implementation. Private bots and private accounts are entirely outside scope.
+- Issue #15 (contract) and #18 (protected main before release tag) remain open.
+  Keep release as candidate until governance gates are met.
+
+## Previous Unreleased
 
 ### Added
 
