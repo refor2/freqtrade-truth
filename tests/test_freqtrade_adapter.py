@@ -162,3 +162,78 @@ def test_response_offset_mismatch_fails_closed() -> None:
 
     with pytest.raises(FreqtradeResponseError, match="offset"):
         asyncio.run(adapter.fetch_closed_trades(query()))
+
+
+@pytest.mark.parametrize(
+    ("pair", "quote_currency", "expected_settlement"),
+    [
+        ("BTC/USD:USD-310404", "USD", "USD"),
+        ("BTC/USD:BTC-310404", "USD", "BTC"),
+        ("ETH/USDT:USDT-241231", "USDT", "USDT"),
+        ("BTC/USD:USD", "USD", "USD"),
+        ("BTC/USD:BTC", "USD", "BTC"),
+        ("BTC/USD", "USD", "USD"),
+    ],
+)
+def test_dated_ccxt_future_settlement_excludes_contract_expiry(
+    pair: str,
+    quote_currency: str,
+    expected_settlement: str,
+) -> None:
+    """CCXT BASE/QUOTE:SETTLE-YYMMDD must never yield SETTLE-YYMMDD as currency."""
+    payload: JsonObject = {
+        "trades": [
+            {
+                "trade_id": 2100,
+                "pair": pair,
+                "quote_currency": quote_currency,
+                "is_open": False,
+                "open_timestamp": 1893484800000,
+                "close_timestamp": 1893499200000,
+                "profit_abs": Decimal("0.10"),
+                "funding_fees": None,
+            }
+        ],
+        "trades_count": 1,
+        "offset": 0,
+        "total_trades": 1,
+    }
+    records = asyncio.run(
+        FreqtradeReadAdapter(StaticTransport(payload)).fetch_closed_trades(query())
+    )
+    record = records[0]
+    assert record.instrument == pair  # Complete symbol identity must not be stripped.
+    assert record.settlement_currency == expected_settlement
+
+
+@pytest.mark.parametrize(
+    "pair",
+    [
+        "BTC/USD:USD-",
+        "BTC/USD:USD-INVALID",
+        "BTC/USD:USD-310404-EXTRA",
+        "BTC/USD:",
+        "BTC/USD: USD-310404",
+        "BTC/USD:US-D",
+    ],
+)
+def test_invalid_or_ambiguous_ccxt_settlement_suffix_fails_closed(pair: str) -> None:
+    payload: JsonObject = {
+        "trades": [
+            {
+                "trade_id": 2101,
+                "pair": pair,
+                "quote_currency": "USD",
+                "is_open": False,
+                "open_timestamp": 1893484800000,
+                "close_timestamp": 1893499200000,
+                "profit_abs": Decimal("0.10"),
+                "funding_fees": None,
+            }
+        ],
+        "trades_count": 1,
+        "offset": 0,
+        "total_trades": 1,
+    }
+    with pytest.raises(FreqtradeResponseError, match="settlement"):
+        asyncio.run(FreqtradeReadAdapter(StaticTransport(payload)).fetch_closed_trades(query()))
