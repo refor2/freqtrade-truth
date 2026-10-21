@@ -43,7 +43,19 @@ pytest
 
 No live credentials are required for any repository test.
 
-## 3. Optional credential-free public market check
+## 3. Run a real packaged offline demonstration
+
+```bash
+freqtrade-truth demo
+freqtrade-truth demo --json
+```
+
+The command exercises the deterministic financial comparison core with
+synthetic data, without network, credentials or an exchange account.
+Its numerical `match` result is **not** a verified cross-source economic
+trade match. See [offline demo](offline-demo.md) for exact examples and limits.
+
+## 4. Optional credential-free public market check
 
 The CLI can verify current public Bybit inverse-market metadata:
 
@@ -66,7 +78,7 @@ Account access: skipped (public-only mode)
 
 Values in documentation are illustrative. Current exchange metadata is read at runtime.
 
-## 4. Optional authenticated read-only check
+## 5. Optional authenticated read-only check
 
 Use only a Bybit API key configured as read-only. Do not pass credentials as command-line arguments.
 
@@ -100,7 +112,7 @@ Authenticated mode:
 
 The CLI does not expose order placement, cancellation, leverage changes, transfers, or withdrawals.
 
-## 5. Safe diagnostics
+## 6. Safe diagnostics
 
 Do not paste authenticated command output, shell history, environment dumps, HTTP traces, exchange responses, or screenshots into public issues without reviewing them first.
 
