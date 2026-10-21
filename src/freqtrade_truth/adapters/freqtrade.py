@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
 from decimal import Decimal
@@ -224,8 +225,11 @@ def _from_milliseconds(timestamp_ms: int) -> datetime:
 
 
 def _settlement_currency(pair: str, quote_currency: str) -> str:
-    if ":" in pair:
-        settlement = pair.rsplit(":", 1)[1].strip()
-        if settlement:
-            return settlement.upper()
-    return quote_currency.upper()
+    # CCXT uses BASE/QUOTE:SETTLE-YYMMDD for dated futures, where the
+    # six-digit suffix identifies expiry and is NOT part of the currency.
+    # Keep the full pair unchanged in the trade record for instrument identity.
+    raw = pair.rsplit(":", 1)[1] if ":" in pair else quote_currency
+    match = re.fullmatch(r"([A-Z0-9]{2,12})(?:-[0-9]{6})?", raw)
+    if match is None:
+        raise FreqtradeResponseError("Freqtrade trade settlement currency is ambiguous")
+    return match.group(1)
