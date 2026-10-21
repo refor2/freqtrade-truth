@@ -57,6 +57,7 @@ The foundation milestone defines contracts before integrations:
 - capability-aware read-only adapter protocol,
 - GET-only Freqtrade closed-trade adapter with bounded pagination,
 - Bybit V5 inverse closed-PnL adapter with cursor pagination and seven-day window splitting,
+- OKX V5 FUTURES/SWAP full-position-close history read adapter with native-currency normalization, duplicate/pagination validation and explicitly unverified ownership (injected GET-only transport; authenticated OKX signer is not bundled),
 - GET-only Bybit V5 HMAC authenticated transport for runtime read access,
 - fail-closed Bybit API-key preflight requiring read-only mode,
 - Bybit inverse transaction-log ledger reader for funding, fees, cash flow, and reported balance change,
@@ -67,7 +68,7 @@ The foundation milestone defines contracts before integrations:
 - Python 3.11–3.14 CI,
 - linting, formatting, strict typing, tests, and publication-safety checks.
 
-See [docs/data-model.md](docs/data-model.md), [docs/reconciliation.md](docs/reconciliation.md), [docs/freqtrade-adapter.md](docs/freqtrade-adapter.md), [docs/bybit-adapter.md](docs/bybit-adapter.md), [docs/compatibility.md](docs/compatibility.md), [docs/versioning.md](docs/versioning.md), [docs/first-run.md](docs/first-run.md), [docs/dependency-audit.md](docs/dependency-audit.md), and [ROADMAP.md](ROADMAP.md).
+See [docs/data-model.md](docs/data-model.md), [docs/reconciliation.md](docs/reconciliation.md), [docs/freqtrade-adapter.md](docs/freqtrade-adapter.md), [docs/bybit-adapter.md](docs/bybit-adapter.md), [docs/okx-adapter.md](docs/okx-adapter.md), [docs/compatibility.md](docs/compatibility.md), [docs/versioning.md](docs/versioning.md), [docs/first-run.md](docs/first-run.md), [docs/dependency-audit.md](docs/dependency-audit.md), and [ROADMAP.md](ROADMAP.md).
 
 ## Planned v0.1 scope
 
