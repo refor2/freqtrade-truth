@@ -53,6 +53,23 @@ class BybitTransactionLogEntry:
     trade_ref: str | None
 
 
+@dataclass(frozen=True, slots=True)
+class BybitPaginatedWindowEvidence:
+    """Evidence only that all returned API cursor pages were traversed.
+
+    This is *not* proof of ledger retention, same-account/bot ownership,
+    correct economic lifecycle, or complete funding/fee attribution.
+    """
+
+    source_name: str
+    native_symbol: str
+    settlement_currency: str
+    start_at: datetime
+    end_at: datetime
+    records: tuple[BybitTransactionLogEntry, ...]
+    pagination_exhausted: bool = True
+
+
 class BybitInverseTransactionLogReader:
     """Read and normalize Bybit V5 inverse transaction-log events."""
 
@@ -83,6 +100,30 @@ class BybitInverseTransactionLogReader:
         self._normalized_instrument = normalized_instrument or symbol
         self._page_size = page_size
         self._source_name = source_name
+
+    async def fetch_paginated_window_evidence(
+        self,
+        query: BybitTransactionLogQuery,
+    ) -> BybitPaginatedWindowEvidence:
+        """Report exhausted API pagination only for an untruncated millisecond window.
+
+        Does not assert exchange account retention, complete economic ledger,
+        position ownership, or trusted fee/funding attribution.
+        """
+        if query.limit is not None:
+            raise ValueError("pagination evidence requires a query without limit")
+        if query.start_at.microsecond % 1000 or query.end_at.microsecond % 1000:
+            raise ValueError("pagination evidence requires millisecond-aligned bounds")
+
+        records = tuple(await self.fetch(query))
+        return BybitPaginatedWindowEvidence(
+            source_name=self._source_name,
+            native_symbol=self._symbol,
+            settlement_currency=self._settlement_currency,
+            start_at=query.start_at,
+            end_at=query.end_at,
+            records=records,
+        )
 
     async def fetch(
         self,
