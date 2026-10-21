@@ -69,7 +69,7 @@ def review_fee_ledger_order_candidates(
         contradictory = any(
             event.instrument != snapshot.instrument
             or event.settlement_currency != settlement_currency
-            or event.funding is not None
+            or event.funding not in (None, 0)
             or event.trading_fees is None
             for event in order_events
         )
