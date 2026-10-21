@@ -441,3 +441,65 @@ def test_other_symbol_is_filtered_before_normalized_identity_is_applied() -> Non
     records = asyncio.run(normalized.fetch(query()))
 
     assert records == ()
+
+
+def test_page_exhaustion_evidence_requires_all_pages_and_preserves_scope() -> None:
+    early = datetime(2030, 1, 1, 9, tzinfo=UTC)
+    late = datetime(2030, 1, 1, 12, tzinfo=UTC)
+    transport = RecordingTransport(
+        [
+            response([item(event_id="late", occurred_at=late)], cursor="next"),
+            response([item(event_id="early", occurred_at=early)]),
+        ]
+    )
+    source = reader(transport)
+
+    snapshot = asyncio.run(source.fetch_paginated_window_evidence(query()))
+
+    assert snapshot.pagination_exhausted is True
+    assert snapshot.source_name == "bybit"
+    assert snapshot.native_symbol == "BTCUSD"
+    assert snapshot.settlement_currency == "BTC"
+    assert snapshot.start_at == datetime(2030, 1, 1, tzinfo=UTC)
+    assert snapshot.end_at == datetime(2030, 1, 2, tzinfo=UTC)
+    assert [r.event_ref for r in snapshot.records] == ["early", "late"]
+    assert len(transport.requests) == 2
+
+
+def test_limited_query_cannot_claim_pagination_exhausted() -> None:
+    transport = RecordingTransport([])
+
+    with pytest.raises(ValueError, match="limit"):
+        asyncio.run(reader(transport).fetch_paginated_window_evidence(query(limit=1)))
+
+    assert transport.requests == []
+
+
+@pytest.mark.parametrize("micros", [1, 999, 1001])
+def test_submillisecond_source_window_rejected_before_request(micros: int) -> None:
+    transport = RecordingTransport([])
+    target = query(start_at=datetime(2030, 1, 1, 0, 0, 0, micros, tzinfo=UTC))
+    with pytest.raises(ValueError, match="millisecond"):
+        asyncio.run(reader(transport).fetch_paginated_window_evidence(target))
+    assert transport.requests == []
+
+
+def test_cursor_failure_never_yields_page_exhaustion_evidence() -> None:
+    transport = RecordingTransport(
+        [
+            response([], cursor="duplicate"),
+            response([], cursor="duplicate"),
+        ]
+    )
+    with pytest.raises(BybitTransactionLogError, match="cursor repeated"):
+        asyncio.run(reader(transport).fetch_paginated_window_evidence(query()))
+    assert len(transport.requests) == 2
+
+
+def test_empty_result_is_page_exhaustion_not_proven_economic_ownership() -> None:
+    transport = RecordingTransport([response([])])
+    snapshot = asyncio.run(reader(transport).fetch_paginated_window_evidence(query()))
+    assert snapshot.pagination_exhausted
+    assert snapshot.records == ()
+    assert not hasattr(snapshot, "account_ownership_verified")
+    assert not hasattr(snapshot, "funding_attributed")

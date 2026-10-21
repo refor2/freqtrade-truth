@@ -147,6 +147,13 @@ class BybitInverseClosedPnlAdapter:
         self,
         raw_record: Mapping[str, JsonValue],
     ) -> NormalizedTradeRecord:
+        # The API may also return settlement/correction event types. They must
+        # not be treated as ordinary closed trades by this preview adapter.
+        # Preserve legacy fixtures where execType is absent; an explicit
+        # unsupported or malformed value fails closed instead of being ignored.
+        if "execType" in raw_record and raw_record["execType"] != "Trade":
+            raise BybitResponseError("Bybit closed-PnL execType is not a supported trade")
+
         symbol = _require_non_empty_str(raw_record, "symbol")
         if symbol != self._symbol:
             raise BybitResponseError("Bybit response symbol does not match configured symbol")
