@@ -47,6 +47,43 @@ The adapter does not derive a missing funding value by subtraction.
 
 A future transaction-log enrichment layer may provide a separately sourced funding component.
 
+### Closed-PnL economic contract: no double-counting (#15-B, 2026-10-21)
+
+Official Bybit documentation says inverse **Closed P&L** already incorporates
+opening/closing trading fees and allocated funding. Partial closures may receive
+prorated opening fees and funding. The `closedPnl` source field is therefore an
+**already-net** result, not price-only PnL.
+
+Synthetic example in settlement BTC:
+
+| Source item | Source amount | Normalized meaning |
+| --- | ---: | --- |
+| `closedPnl` | `0.00103` | `reported_net_pnl = 0.00103` |
+| `openFee` | `0.00008` | Fee cost, included in reported net |
+| `closeFee` | `-0.00002` | Fee rebate, included in reported net |
+| Derived fee breakdown | — | `trading_fees = -0.00006` (equity-signed) |
+| Funding component | Not supplied here | `funding = None`, **not** zero |
+
+Do **not** subtract the fee breakdown from `reported_net_pnl`, add ledger funding
+to it again, or derive gross price PnL from these fields. A separate ledger
+stream is candidate evidence until trade/position ownership, coverage and
+non-overlap are proven. Fee and funding values across settlement currencies
+must not be silently summed or converted. This documents source semantics,
+**not** approval of final v0.1 reconciliation statuses/attribution.
+
+The Closed-PnL endpoint can include `execType` values other than `Trade`
+(e.g. `BustTrade`, `SessionSettlePnL`, `Settle`, `MovePosition`,
+`CorporateAction`). If the field is explicitly present, this preliminary
+trade-only adapter accepts `Trade` and **fails closed** for any other or
+malformed value. Historical payloads omitting the optional `execType` continue
+to normalize for backwards compatibility; omission is **not independent
+proof** of event classification, complete settlement, or trade ownership.
+
+Official sources:
+- https://bybit-exchange.github.io/docs/v5/position/close-pnl
+- https://www.bybit.com/en/help-center/article/Profit-Loss-calculations-Inverse-Contracts
+- https://bybit-exchange.github.io/docs/v5/account/transaction-log
+
 ## Pagination and time windows
 
 Bybit limits a closed-PnL request to a maximum seven-day interval and supports cursor pagination.
