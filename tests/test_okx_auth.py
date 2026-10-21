@@ -55,9 +55,9 @@ class FakeConnection:
 def reader() -> okx_auth.OkxV5ReadOnlyHmacTransport:
     return okx_auth.OkxV5ReadOnlyHmacTransport(
         BASE,
-        api_key="fixture-key",
-        api_secret="fixture-secret",
-        api_passphrase="fixture-passphrase",
+        api_key="dummy-key",
+        api_secret="dummy-secret",
+        api_passphrase="dummy-passphrase",
         clock=lambda: NOW,
     )
 
@@ -76,12 +76,12 @@ def test_okx_hmac_headers_query_and_no_post(monkeypatch: pytest.MonkeyPatch) -> 
     assert method == "GET"
     assert target == "/api/v5/account/positions-history?instType=FUTURES&limit=2"
     content = (NOW + "GET" + target).encode("utf-8")
-    expected = base64.b64encode(
-        hmac.new(b"fixture-secret", content, hashlib.sha256).digest()
-    ).decode("ascii")
+    expected = base64.b64encode(hmac.new(b"dummy-secret", content, hashlib.sha256).digest()).decode(
+        "ascii"
+    )
     assert headers["OK-ACCESS-SIGN"] == expected
-    assert headers["OK-ACCESS-KEY"] == "fixture-key"
-    assert headers["OK-ACCESS-PASSPHRASE"] == "fixture-passphrase"
+    assert headers["OK-ACCESS-KEY"] == "dummy-key"
+    assert headers["OK-ACCESS-PASSPHRASE"] == "dummy-passphrase"
     assert headers["OK-ACCESS-TIMESTAMP"] == NOW
     assert conn.closed
     assert FakeConnection.response.closed
@@ -109,7 +109,7 @@ def test_only_one_source_read_endpoint_allowed(path: str) -> None:
         "http://www.okx.com",
         "https://wrong.example",
         "https://www.okx.com.evil.example",
-        "https://user:pass@www.okx.com",
+        "https://dummy:dummy@www.okx.com",
         "https://www.okx.com:444",
         "https://www.okx.com/api/v5",
     ],
@@ -118,9 +118,9 @@ def test_only_exact_documented_host_and_safe_base_url(url: str) -> None:
     with pytest.raises(ValueError):
         okx_auth.OkxV5ReadOnlyHmacTransport(
             url,
-            api_key="fixture-key",
-            api_secret="fixture-secret",
-            api_passphrase="fixture-passphrase",
+            api_key="dummy-key",
+            api_secret="dummy-secret",
+            api_passphrase="dummy-passphrase",
         )
 
 
@@ -142,7 +142,7 @@ def test_non_success_http_never_reveals_credentials(monkeypatch: pytest.MonkeyPa
     monkeypatch.setattr(okx_auth, "HTTPSConnection", FakeConnection)
     with pytest.raises(HttpTransportError) as caught:
         asyncio.run(reader().get_json(PATH))
-    assert "fixture-" not in str(caught.value)
+    assert "dummy-" not in str(caught.value)
     assert "leaky-secret" not in str(caught.value)
     assert caught.value.status_code == 401
 
