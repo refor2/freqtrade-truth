@@ -34,6 +34,7 @@ from freqtrade_truth.adapters.bybit_transaction_log import (
 )
 from freqtrade_truth.adapters.http import HttpTransportError
 from freqtrade_truth.core.models import ClosedTradeQuery
+from freqtrade_truth.offline_demo import build_offline_demo
 
 _DEFAULT_BYBIT_BASE_URL = "https://api.bybit.com"
 _MAX_SMOKE_WINDOW_HOURS = 168
@@ -191,6 +192,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    demo = subparsers.add_parser(
+        "demo", help="Offline synthetic numeric reconciliation demo; not verified financial truth."
+    )
+    demo.add_argument("--json", action="store_true", dest="json_output")
+
     bybit = subparsers.add_parser(
         "bybit-check",
         help="Run a read-only Bybit inverse market and account smoke check.",
@@ -244,6 +250,16 @@ def main(
     out = stdout or sys.stdout
     err = stderr or sys.stderr
     env = environ if environ is not None else os.environ
+
+    if args.command == "demo":
+        demo_result = build_offline_demo()
+        if args.json_output:
+            print(json.dumps(demo_result, sort_keys=True), file=out)
+        else:
+            print("SYNTHETIC numeric comparison — NOT verified ownership / accounting", file=out)
+            for item in demo_result["scenarios"]:
+                print(f"  {item['name']}: {item['numeric_status']}", file=out)
+        return 0
 
     if args.command != "bybit-check":
         parser.error("unsupported command")

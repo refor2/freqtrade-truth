@@ -6,6 +6,20 @@ Its goal is simple: make it easier to verify whether bot-side trade results matc
 
 > Status: **pre-alpha preview**. Freqtrade and the first Bybit inverse read paths are implemented and test-covered. Deterministic grouping and normalized field comparison are implemented; exchange-ledger enrichment and reporting are still incomplete. Reconciliation status names, reason codes, attribution rules, and reporting contracts remain provisional until the [v0.1 contract-stabilization gate](https://github.com/refor2/freqtrade-truth/issues/15) is complete. Do not use this preview as the sole source for accounting or trading decisions.
 
+## Try it in one minute — entirely offline
+
+```bash
+python -m pip install -e .
+freqtrade-truth demo
+freqtrade-truth demo --json
+```
+
+The demo uses synthetic records only; no credentials or exchange access. It
+shows numerical `match`, `review` and `incomplete` examples. **A numeric
+`match` is not proof of matching economic trade/account ownership**; the
+public v0.1 identity and attribution contract is not yet finalized.
+See [the offline demonstration](docs/offline-demo.md).
+
 ## Why
 
 Trading systems often expose several financial views at once: strategy results, bot trade records, exchange fills, fees, funding, and realized settlement. Small differences can accumulate or remain unnoticed.

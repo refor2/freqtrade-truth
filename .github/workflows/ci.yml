@@ -100,6 +100,8 @@ jobs:
         run: |
           freqtrade-truth --help
           python -m freqtrade_truth --help
+          freqtrade-truth demo --json
+          python -m freqtrade_truth demo --json
 
   tests:
     runs-on: ubuntu-latest
