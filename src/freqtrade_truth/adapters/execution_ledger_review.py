@@ -161,9 +161,13 @@ def review_bot_execution_ledger_candidates(
                 for window in order_windows
                 for execution in window.records
             ]
-            if not collected or any(
-                link is None or link.state is not OrderLinkReviewState.CANDIDATE
-                for link in collected
+            if (
+                any(not window.records for window in order_windows)
+                or not collected
+                or any(
+                    link is None or link.state is not OrderLinkReviewState.CANDIDATE
+                    for link in collected
+                )
             ):
                 state = OrderLinkReviewState.AMBIGUOUS
                 candidates = ()
