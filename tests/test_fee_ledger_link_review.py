@@ -204,3 +204,14 @@ def test_inconsistent_bot_order_evidence_rejected_by_existing_validator() -> Non
     )
     with pytest.raises(ValueError, match="observed"):
         review_fee_ledger_order_candidates((broken,), (), settlement_currency="BTC")
+
+
+def test_explicit_zero_funding_on_trade_does_not_hide_fee_candidate() -> None:
+    """A source-observed zero funding amount is not a mixed funding charge."""
+    result = review_fee_ledger_order_candidates(
+        (bot("42", positive=("A",)),),
+        (event("trade-zero-funding", order_id="A", funding=Decimal("0")),),
+        settlement_currency="BTC",
+    )[0]
+    assert result.state is OrderLinkReviewState.CANDIDATE
+    assert result.candidate_record_ids == ("bybit-ledger:trade-zero-funding",)
