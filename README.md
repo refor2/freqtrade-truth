@@ -57,7 +57,7 @@ The foundation milestone defines contracts before integrations:
 - capability-aware read-only adapter protocol,
 - GET-only Freqtrade closed-trade adapter with bounded pagination,
 - Bybit V5 inverse closed-PnL adapter with cursor pagination and seven-day window splitting,
-- OKX V5 FUTURES/SWAP full-position-close history read adapter with native-currency normalization, duplicate/pagination validation and explicitly unverified ownership (injected GET-only transport; authenticated OKX signer is not bundled),
+- OKX V5 FUTURES/SWAP full-position-close history read adapter with native-currency normalization, duplicate/pagination validation and explicitly unverified ownership (single-endpoint authenticated GET-only OKX signer also available; must use a separately issued Read-permission key),
 - GET-only Bybit V5 HMAC authenticated transport for runtime read access,
 - fail-closed Bybit API-key preflight requiring read-only mode,
 - Bybit inverse transaction-log ledger reader for funding, fees, cash flow, and reported balance change,
