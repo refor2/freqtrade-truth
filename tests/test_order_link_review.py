@@ -168,3 +168,26 @@ def test_invalid_evidence_and_wrong_source_fails_closed() -> None:
     )
     with pytest.raises(ValueError, match="exchange"):
         review_order_id_candidates((bot,), (wrong_source,), settlement_currency="BTC")
+
+
+@pytest.mark.parametrize("competing_fill", ["unknown", "zero"])
+def test_competing_observed_order_id_never_yields_exclusive_candidate(
+    competing_fill: str,
+) -> None:
+    competitor = (
+        bot_snapshot("43", unknown=("EX-1",))
+        if competing_fill == "unknown"
+        else bot_snapshot("43", zero=("EX-1",))
+    )
+    results = review_order_id_candidates(
+        (bot_snapshot("42", positive=("EX-1",)), competitor),
+        (exchange_record("exchange-1", "EX-1"),),
+        settlement_currency="BTC",
+    )
+    assert results[0].state is OrderLinkReviewState.AMBIGUOUS
+    assert results[0].candidate_record_ids == ()
+
+
+def test_blank_settlement_currency_is_rejected() -> None:
+    with pytest.raises(ValueError, match="settlement_currency"):
+        review_order_id_candidates((), (), settlement_currency="   ")

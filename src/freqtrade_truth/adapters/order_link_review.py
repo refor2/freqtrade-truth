@@ -46,7 +46,7 @@ def review_order_id_candidates(
     competing bot snapshots and exchange records must be passed together;
     incomplete input cannot establish exclusivity or verified identity.
     """
-    if not settlement_currency or settlement_currency != settlement_currency.upper():
+    if not settlement_currency.strip() or settlement_currency != settlement_currency.upper():
         raise ValueError("settlement_currency must be non-empty uppercase")
 
     seen_bots: set[tuple[str, str]] = set()
@@ -70,7 +70,9 @@ def review_order_id_candidates(
             or not set((*positive, *zero, *unknown)).issubset(observed)
         ):
             raise ValueError("bot fill categories must be unique subsets of observed orders")
-        owner_counts.update(positive)
+        # Even an unknown or zero-fill reference held by another bot makes
+        # cross-trade order-ID ownership insufficiently exclusive.
+        owner_counts.update(observed)
 
     seen_exchange: set[tuple[str, str]] = set()
     for record in exchange_records:
