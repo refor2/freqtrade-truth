@@ -307,3 +307,21 @@ def test_three_source_chain_input_order_is_deterministic() -> None:
         normalized_instrument="BTC/USD:BTC",
     )
     assert actual == expected
+
+
+def test_three_source_chain_rejects_empty_execution_window_for_positive_order() -> None:
+    """All positively filled Freqtrade order references require real execution evidence."""
+    from dataclasses import replace
+
+    second_fill = replace(fill("EX-2"), order_ref="SECOND")
+    second_window = replace(fills(second_fill), order_ref="SECOND")
+    results = review_bot_execution_ledger_candidates(
+        (bot_snapshot("42", positive=("ORDER", "SECOND")),),
+        (fills(), second_window),
+        ledger(ledger_event("EX-2", order_id="SECOND", record_id="LOG-2")),
+        settlement_currency="BTC",
+        normalized_instrument="BTC/USD:BTC",
+    )
+    assert len(results) == 1
+    assert results[0].state is OrderLinkReviewState.AMBIGUOUS
+    assert results[0].candidate_record_ids == ()
