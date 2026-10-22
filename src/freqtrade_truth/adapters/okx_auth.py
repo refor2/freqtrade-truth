@@ -20,7 +20,7 @@ from urllib.parse import urlencode, urlsplit
 
 from freqtrade_truth.adapters.http import HttpTransportError, JsonObject
 
-_ALLOWED_HOST = "www.okx.com"
+_ALLOWED_HOSTS = frozenset({"www.okx.com", "eea.okx.com", "us.okx.com"})
 _ALLOWED_PATH = "api/v5/account/positions-history"
 _MAX_BYTES = 10 * 1024 * 1024
 
@@ -46,7 +46,7 @@ class OkxV5ReadOnlyHmacTransport:
         parsed = urlsplit(base_url)
         if (
             parsed.scheme != "https"
-            or parsed.hostname != _ALLOWED_HOST
+            or parsed.hostname not in _ALLOWED_HOSTS
             or parsed.username is not None
             or parsed.password is not None
             or parsed.port not in (None, 443)
@@ -64,7 +64,7 @@ class OkxV5ReadOnlyHmacTransport:
                 raise ValueError(f"{name} must be a nonempty single-line value")
         if timeout_seconds <= 0 or max_response_bytes <= 0:
             raise ValueError("timeouts and response limits must be positive")
-        self._hostname = _ALLOWED_HOST
+        self._hostname = parsed.hostname
         self._port = parsed.port
         self._api_key = api_key
         self._api_secret = api_secret

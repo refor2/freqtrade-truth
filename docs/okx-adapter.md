@@ -4,10 +4,13 @@ This module adds an **independent OKX adapter** while retaining Bybit. It reads
 `GET /api/v5/account/positions-history` only through the injected
 `JsonHttpTransport` interface. No account credentials or production connection
 are needed for tests. The optional `OkxV5ReadOnlyHmacTransport` now signs requests **only** for
-that exact GET path and only for the documented `www.okx.com` HTTPS host.
+that exact GET path and only for official, explicitly supported OKX HTTPS hosts:
+`www.okx.com` (Global), `eea.okx.com` (EEA), and `us.okx.com` (US).
 Callers must independently issue a Read-only key and confirm the exact
 regional OKX endpoint they are allowed to use. The public package does
-not verify an account key's permission flags or provide a turnkey CLI.
+not verify an account key's permission flags. The authenticated
+`freqtrade-truth okx-check` source-preview CLI is described in
+[OKX quick start](okx-quickstart.md).
 
 ## Supported now
 
@@ -78,6 +81,9 @@ adapter = OkxPositionHistoryAdapter(
 ```
 
 The signer supports **only** `GET /api/v5/account/positions-history`.
+The CLI `freqtrade-truth okx-check` builds that signed reader from three
+environment variables and explicit `--region`/`--inst-id`/`--settle`/`--pair`
+inputs. It prints an aggregate source preview, not trade/account ownership.
 Any attempt to use a trade/withdrawal path, URL credentials, redirects or
 non-official host is rejected; no POST support exists. It is still not
 capable of proving that the key itself has only Read permissions, so

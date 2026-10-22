@@ -80,4 +80,4 @@ def test_cli_exposes_only_reviewed_read_only_commands() -> None:
     ]
 
     assert len(subparser_actions) == 1
-    assert set(subparser_actions[0].choices) == {"bybit-check", "demo"}
+    assert set(subparser_actions[0].choices) == {"bybit-check", "okx-check", "demo"}

@@ -6,6 +6,17 @@ Its goal is simple: make it easier to verify whether bot-side trade results matc
 
 > Status: **pre-alpha preview**. Freqtrade and the first Bybit inverse read paths are implemented and test-covered. Deterministic grouping and normalized field comparison are implemented; exchange-ledger enrichment and reporting are still incomplete. Reconciliation status names, reason codes, attribution rules, and reporting contracts remain provisional until the [v0.1 contract-stabilization gate](https://github.com/refor2/freqtrade-truth/issues/15) is complete. Do not use this preview as the sole source for accounting or trading decisions.
 
+## Read recent OKX history (read-only, EEA supported)
+
+After installing the package, a Freqtrade operator can run `okx-check`
+without writing Python. It supports official account-region domains including
+`eea.okx.com`, accepts a separately configured **Read-only** API key via
+environment variables and returns a redacted native-currency source preview.
+No trading endpoints or Freqtrade strategy changes are involved.
+See [OKX first-run instructions](docs/okx-quickstart.md) and
+[OKX source-adapter limits](docs/okx-adapter.md). **Position-history numeric
+values do not prove trade ownership or account-wide financial correctness.**
+
 ## Try it in one minute — entirely offline
 
 ```bash

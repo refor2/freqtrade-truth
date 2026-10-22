@@ -55,7 +55,15 @@ synthetic data, without network, credentials or an exchange account.
 Its numerical `match` result is **not** a verified cross-source economic
 trade match. See [offline demo](offline-demo.md) for exact examples and limits.
 
-## 4. Optional credential-free public market check
+## 4. Optional OKX source check (Read-only credentials)
+
+For EEA, Global, and US OKX accounts, see [OKX quick start](okx-quickstart.md).
+Use a **separate, Read-only** OKX key and verify the instrument settlement
+metadata first. `freqtrade-truth okx-check` performs authenticated GET-only
+historical-position source reads, with no trading permissions required and
+no verified Freqtrade economic trade attribution.
+
+## 5. Optional credential-free public market check
 
 The CLI can verify current public Bybit inverse-market metadata:
 
