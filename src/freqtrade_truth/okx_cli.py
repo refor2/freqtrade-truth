@@ -14,6 +14,8 @@ from decimal import Decimal
 from freqtrade_truth.adapters.okx_auth import OkxV5ReadOnlyHmacTransport
 from freqtrade_truth.adapters.okx_positions_history import OkxPositionHistoryAdapter
 from freqtrade_truth.core.models import ClosedTradeQuery
+from freqtrade_truth.core.native_accounting import audit_native_record
+from freqtrade_truth.okx_instruments import require_qualified_isolated_xperp
 
 OFFICIAL_REGION_BASE_URLS = {
     "global": "https://www.okx.com",
@@ -35,6 +37,8 @@ class OkxCheckConfig:
     hours: int
     limit: int
     json_output: bool
+    source_amount_ccy: str | None = None
+    isolated_xperp: bool = False
 
     def __post_init__(self) -> None:
         if self.region not in OFFICIAL_REGION_BASE_URLS:
@@ -62,6 +66,23 @@ class OkxCheckConfig:
         pair_settle = self.pair.split(":", 1)[1].split("-", 1)[0]
         if pair_settle != self.settle:
             raise ValueError("pair and settlement currency disagree")
+        source_ccy = self.source_amount_ccy or self.settle
+        if source_ccy != self.settle or self.isolated_xperp:
+            expiry = self.inst_id.rsplit("-", 1)[-1]
+            if not (
+                self.isolated_xperp
+                and self.inst_type == "FUTURES"
+                and self.settle == "USD"
+                and source_ccy == "USDC"
+                and expiry.isascii()
+                and expiry.isdigit()
+                and len(expiry) == 6
+                and self.pair.endswith(f":USD-{expiry}")
+            ):
+                raise ValueError(
+                    "isolated xperp native USDC requires FUTURES "
+                    "with qualified USD expiry and source amount currency"
+                )
         if not isinstance(self.hours, int) or isinstance(self.hours, bool):
             raise ValueError("hours must be an integer")
         if self.hours < 1 or self.hours > _MAX_HOURS:
@@ -88,6 +109,14 @@ async def run_okx_check(
             "must all be defined for a separately provisioned Read-only key"
         )
 
+    if config.isolated_xperp:
+        await require_qualified_isolated_xperp(
+            region=config.region,
+            inst_id=config.inst_id,
+            inst_type=config.inst_type,
+            settle=config.settle,
+        )
+
     transport = OkxV5ReadOnlyHmacTransport(
         OFFICIAL_REGION_BASE_URLS[config.region],
         api_key=key,
@@ -98,8 +127,9 @@ async def run_okx_check(
         transport,
         inst_id=config.inst_id,
         inst_type=config.inst_type,
-        settlement_currency=config.settle,
+        settlement_currency=config.source_amount_ccy or config.settle,
         normalized_instrument=config.pair,
+        isolated_xperp=config.isolated_xperp,
     )
 
     now = datetime.now(UTC)
@@ -111,6 +141,12 @@ async def run_okx_check(
             limit=config.limit,
         )
     )
+    statuses = [audit_native_record(row, tolerance=Decimal("0.00000001")).status for row in rows]
+    native_accounting_counts = {
+        "consistent": statuses.count("consistent"),
+        "different": statuses.count("different"),
+        "incomplete": statuses.count("incomplete"),
+    }
     monetary_values = tuple(r.reported_net_pnl for r in rows)
     valid_values = tuple(v for v in monetary_values if v is not None)
     # Missing values MUST NOT silently convert to a successful zero total.
@@ -127,10 +163,14 @@ async def run_okx_check(
         "inst_type": config.inst_type,
         "qualified_pair_claim": config.pair,
         "settlement_currency_claim": config.settle,
+        "source_amount_currency_claim": config.source_amount_ccy or config.settle,
+        "isolated_xperp_qualified_by_caller": config.isolated_xperp,
         "window_hours": config.hours,
         "record_limit": config.limit,
         "closed_position_count": len(rows),
         "native_pnl_values_present": len(valid_values),
+        "native_accounting_counts": native_accounting_counts,
+        "native_accounting_only": True,
         "reported_net_native": str(native_total) if native_total is not None else None,
         "ownership_verified": False,
         "history_complete": False,
