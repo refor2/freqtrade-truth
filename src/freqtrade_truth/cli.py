@@ -37,6 +37,7 @@ from freqtrade_truth.adapters.okx_positions_history import OkxPositionHistoryErr
 from freqtrade_truth.core.models import ClosedTradeQuery
 from freqtrade_truth.offline_demo import build_offline_demo
 from freqtrade_truth.okx_cli import OkxCheckConfig, run_okx_check
+from freqtrade_truth.okx_instruments import OkxInstrumentPreflightError
 
 _DEFAULT_BYBIT_BASE_URL = "https://api.bybit.com"
 _MAX_SMOKE_WINDOW_HOURS = 168
@@ -244,6 +245,16 @@ def build_parser() -> argparse.ArgumentParser:
     okx.add_argument("--inst-type", required=True, help="SWAP or FUTURES.")
     okx.add_argument("--settle", required=True, help="Qualified native settlement currency.")
     okx.add_argument("--pair", required=True, help="Exact canonical Freqtrade pair.")
+    okx.add_argument(
+        "--source-amount-ccy",
+        default=None,
+        help="Actual OKX position-history monetary unit, e.g. USDC for isolated XPERP.",
+    )
+    okx.add_argument(
+        "--isolated-xperp",
+        action="store_true",
+        help="Explicit special case: isolated USD-settled XPERP with native USDC amounts.",
+    )
     okx.add_argument("--hours", default="24", help="Read window in hours, 1..2160.")
     okx.add_argument("--limit", default="50", help="Maximum returned rows, 1..100.")
     okx.add_argument(
@@ -292,9 +303,16 @@ def main(
                 hours=int(args.hours),
                 limit=int(args.limit),
                 json_output=bool(args.json_output),
+                source_amount_ccy=args.source_amount_ccy,
+                isolated_xperp=bool(args.isolated_xperp),
             )
             result_okx = asyncio.run(run_okx_check(config_okx, environ=env))
-        except (OkxPositionHistoryError, HttpTransportError, ValueError) as exc:
+        except (
+            OkxPositionHistoryError,
+            OkxInstrumentPreflightError,
+            HttpTransportError,
+            ValueError,
+        ) as exc:
             print(f"ERROR: {_redact_message(str(exc), env)}", file=err)
             return 2
         except Exception as exc:  # pragma: no cover - fail closed, no raw payload
