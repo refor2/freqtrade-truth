@@ -289,3 +289,132 @@ def test_full_signed_get_reader_chain_synthetic_eea(monkeypatch: pytest.MonkeyPa
         )
     ]
     assert "synthetic:100" not in json.dumps(result)
+
+
+def test_okx_report_counts_native_arithmetic_but_never_verified_ownership(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from dataclasses import replace
+
+    class FullReader:
+        def __init__(self, *_: object, **__: object) -> None:
+            pass
+
+        async def fetch_closed_trades(self, query: object) -> tuple[NormalizedTradeRecord, ...]:
+            first = replace(
+                row(),
+                price_pnl=Decimal("0.02"),
+                trading_fees=Decimal("-0.005"),
+                funding=Decimal("-0.003"),
+                other_adjustments=Decimal("0"),
+                reported_net_pnl=Decimal("0.012"),
+            )
+            second = replace(row(), record_id="second", trade_ref="second", reported_net_pnl=None)
+            return first, second
+
+    monkeypatch.setattr(okx_cli, "OkxPositionHistoryAdapter", FullReader)
+    res = asyncio.run(
+        okx_cli.run_okx_check(
+            okx_cli.OkxCheckConfig(
+                region="eea",
+                inst_id="BTC-USD-SWAP",
+                inst_type="SWAP",
+                settle="BTC",
+                pair="BTC/USD:BTC",
+                hours=24,
+                limit=25,
+                json_output=True,
+            ),
+            environ=env(),
+        )
+    )
+    assert res["native_accounting_counts"] == {"consistent": 1, "different": 0, "incomplete": 1}
+    assert res["reported_net_native"] is None
+    assert res["ownership_verified"] is False
+
+
+def test_qualified_isolated_xperp_native_usdc_cli() -> None:
+    config = okx_cli.OkxCheckConfig(
+        region="eea",
+        inst_id="BTC-USD-310404",
+        inst_type="FUTURES",
+        settle="USD",
+        pair="BTC/USD:USD-310404",
+        hours=24,
+        limit=25,
+        json_output=True,
+        source_amount_ccy="USDC",
+        isolated_xperp=True,
+    )
+    assert config.source_amount_ccy == "USDC"
+    assert config.settle == "USD"
+
+
+@pytest.mark.parametrize(
+    ("native", "xperp", "kind", "inst_id"),
+    [
+        ("USDC", False, "FUTURES", "BTC-USD-310404"),
+        ("USDT", True, "FUTURES", "BTC-USD-310404"),
+        ("USDC", True, "SWAP", "BTC-USD-SWAP"),
+        ("USDC", True, "FUTURES", "BTC-USD-SWAP"),
+    ],
+)
+def test_unqualified_xperp_currency_override_rejected(
+    native: str,
+    xperp: bool,
+    kind: str,
+    inst_id: str,
+) -> None:
+    with pytest.raises(ValueError, match="xperp|native"):
+        okx_cli.OkxCheckConfig(
+            region="eea",
+            inst_id=inst_id,
+            inst_type=kind,
+            settle="USD",
+            pair="BTC/USD:USD-310404",
+            hours=24,
+            limit=25,
+            json_output=True,
+            source_amount_ccy=native,
+            isolated_xperp=xperp,
+        )
+
+
+def test_xperp_cli_passes_qualified_usdc_to_actual_reader(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seen: dict[str, object] = {}
+
+    class Reader:
+        def __init__(self, transport: object, **options: object) -> None:
+            seen.update(options)
+
+        async def fetch_closed_trades(self, query: object) -> tuple[()]:
+            return ()
+
+    monkeypatch.setattr(okx_cli, "OkxPositionHistoryAdapter", Reader)
+
+    async def approved_preflight(**kwargs: object) -> None:
+        assert kwargs["inst_type"] == "FUTURES"
+        assert kwargs["settle"] == "USD"
+
+    monkeypatch.setattr(okx_cli, "require_qualified_isolated_xperp", approved_preflight)
+    cfg = okx_cli.OkxCheckConfig(
+        region="eea",
+        inst_id="BTC-USD-310404",
+        inst_type="FUTURES",
+        settle="USD",
+        pair="BTC/USD:USD-310404",
+        hours=24,
+        limit=25,
+        json_output=True,
+        source_amount_ccy="USDC",
+        isolated_xperp=True,
+    )
+    result = asyncio.run(okx_cli.run_okx_check(cfg, environ=env()))
+    assert seen["settlement_currency"] == "USDC"
+    assert seen["isolated_xperp"] is True
+    assert result["settlement_currency_claim"] == "USD"
+    assert result["source_amount_currency_claim"] == "USDC"
+    assert result["ownership_verified"] is False
+    assert result["reported_net_native"] is None
