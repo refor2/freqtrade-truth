@@ -79,6 +79,7 @@ class OkxPositionHistoryAdapter:
         normalized_instrument: str,
         page_size: int = _MAX_PAGE_SIZE,
         source_name: str = "okx",
+        isolated_xperp: bool = False,
     ) -> None:
         if not inst_id.strip() or inst_id != inst_id.upper():
             raise ValueError("inst_id must be an explicit uppercase OKX instrument")
@@ -92,6 +93,14 @@ class OkxPositionHistoryAdapter:
             raise ValueError("page_size must be 1..100")
         if not source_name.strip():
             raise ValueError("source_name must be non-empty")
+        if isolated_xperp and not (
+            inst_type == "FUTURES"
+            and settlement_currency == "USDC"
+            and inst_id.rsplit("-", 1)[-1].isascii()
+            and inst_id.rsplit("-", 1)[-1].isdigit()
+            and len(inst_id.rsplit("-", 1)[-1]) == 6
+        ):
+            raise ValueError("isolated xperp requires FUTURES expiry with source USDC")
         self._transport = transport
         self._inst_id = inst_id
         self._inst_type = inst_type
@@ -99,6 +108,7 @@ class OkxPositionHistoryAdapter:
         self._normalized_instrument = normalized_instrument
         self._page_size = page_size
         self._source_name = source_name
+        self._isolated_xperp = isolated_xperp
 
     @property
     def name(self) -> str:
@@ -206,9 +216,25 @@ class OkxPositionHistoryAdapter:
         penalty = _native_decimal(data, "liqPenalty")
         settled = _native_decimal(data, "settledPnl")
         reported = _native_decimal(data, "realizedPnl")
-        other = penalty + settled if penalty is not None and settled is not None else None
+        other: Decimal | None
+        if self._isolated_xperp:
+            if data.get("mgnMode") != "isolated":
+                raise OkxPositionHistoryError("isolated xperp mgnMode required")
+            if data.get("settledPnl") not in (None, ""):
+                raise OkxPositionHistoryError("isolated xperp settledPnl must be absent")
+            if any(v is None for v in (pnl, fee, funding, penalty, reported)):
+                raise OkxPositionHistoryError("isolated xperp native components incomplete")
+            assert pnl is not None and fee is not None and funding is not None
+            assert penalty is not None and reported is not None
+            if pnl + fee + funding + penalty != reported:
+                raise OkxPositionHistoryError("isolated xperp realizedPnl equation mismatched")
+            other = penalty
+        else:
+            other = penalty + settled if penalty is not None and settled is not None else None
 
-        if all(v is not None for v in (pnl, fee, funding, penalty, settled, reported)):
+        if not self._isolated_xperp and all(
+            v is not None for v in (pnl, fee, funding, penalty, settled, reported)
+        ):
             assert pnl is not None and fee is not None and funding is not None
             assert penalty is not None and settled is not None and reported is not None
             if pnl + fee + funding + penalty + settled != reported:
