@@ -33,8 +33,10 @@ from freqtrade_truth.adapters.bybit_transaction_log import (
     BybitTransactionLogQuery,
 )
 from freqtrade_truth.adapters.http import HttpTransportError
+from freqtrade_truth.adapters.okx_positions_history import OkxPositionHistoryError
 from freqtrade_truth.core.models import ClosedTradeQuery
 from freqtrade_truth.offline_demo import build_offline_demo
+from freqtrade_truth.okx_cli import OkxCheckConfig, run_okx_check
 
 _DEFAULT_BYBIT_BASE_URL = "https://api.bybit.com"
 _MAX_SMOKE_WINDOW_HOURS = 168
@@ -233,6 +235,24 @@ def build_parser() -> argparse.ArgumentParser:
         help="Emit the redacted smoke-check summary as JSON.",
     )
 
+    okx = subparsers.add_parser(
+        "okx-check",
+        help="Read recent closed OKX positions from a separately provisioned Read-only key.",
+    )
+    okx.add_argument("--region", required=True, help="eea, global, or us (account region).")
+    okx.add_argument("--inst-id", required=True, help="Native OKX instrument, e.g. BTC-USD-SWAP.")
+    okx.add_argument("--inst-type", required=True, help="SWAP or FUTURES.")
+    okx.add_argument("--settle", required=True, help="Qualified native settlement currency.")
+    okx.add_argument("--pair", required=True, help="Exact canonical Freqtrade pair.")
+    okx.add_argument("--hours", default="24", help="Read window in hours, 1..2160.")
+    okx.add_argument("--limit", default="50", help="Maximum returned rows, 1..100.")
+    okx.add_argument(
+        "--json",
+        action="store_true",
+        dest="json_output",
+        help="Print non-identifying source preview JSON.",
+    )
+
     return parser
 
 
@@ -259,6 +279,35 @@ def main(
             print("SYNTHETIC numeric comparison — NOT verified ownership / accounting", file=out)
             for item in demo_result["scenarios"]:
                 print(f"  {item['name']}: {item['numeric_status']}", file=out)
+        return 0
+
+    if args.command == "okx-check":
+        try:
+            config_okx = OkxCheckConfig(
+                region=str(args.region),
+                inst_id=str(args.inst_id),
+                inst_type=str(args.inst_type),
+                settle=str(args.settle),
+                pair=str(args.pair),
+                hours=int(args.hours),
+                limit=int(args.limit),
+                json_output=bool(args.json_output),
+            )
+            result_okx = asyncio.run(run_okx_check(config_okx, environ=env))
+        except (OkxPositionHistoryError, HttpTransportError, ValueError) as exc:
+            print(f"ERROR: {_redact_message(str(exc), env)}", file=err)
+            return 2
+        except Exception as exc:  # pragma: no cover - fail closed, no raw payload
+            print(f"ERROR: unexpected {type(exc).__name__}", file=err)
+            return 2
+        if config_okx.json_output:
+            print(json.dumps(result_okx, sort_keys=True), file=out)
+        else:
+            print("OKX source-read: PASS (not verified financial truth)", file=out)
+            print(f"Region: {result_okx.get('region')}", file=out)
+            print(f"Fully closed positions: {result_okx.get('closed_position_count')}", file=out)
+            print(f"Reported native net preview: {result_okx.get('reported_net_native')}", file=out)
+            print("Ownership and complete history: NOT VERIFIED", file=out)
         return 0
 
     if args.command != "bybit-check":
@@ -354,7 +403,13 @@ def _require_official_bybit_base_url(base_url: str) -> None:
 
 def _redact_message(message: str, environ: Mapping[str, str]) -> str:
     redacted = message
-    for variable in ("BYBIT_API_KEY", "BYBIT_API_SECRET"):
+    for variable in (
+        "BYBIT_API_KEY",
+        "BYBIT_API_SECRET",
+        "OKX_READ_API_KEY",
+        "OKX_READ_API_SECRET",
+        "OKX_READ_API_PASSPHRASE",
+    ):
         value = environ.get(variable, "")
         if value:
             redacted = redacted.replace(value, "[REDACTED]")
