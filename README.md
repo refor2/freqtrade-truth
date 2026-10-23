@@ -17,6 +17,33 @@ See [OKX first-run instructions](docs/okx-quickstart.md) and
 [OKX source-adapter limits](docs/okx-adapter.md). **Position-history numeric
 values do not prove trade ownership or account-wide financial correctness.**
 
+## OKX fee-component evidence (0.0.5 candidate)
+
+Read-only `okx-native-report` now distinguishes two separate financial claims:
+
+- `fee_fill_position_states`: exact source-native sum of signed fees from
+  every confirmed OKX fill versus signed fee in the uniquely identified
+  position-history row. This does **not** require each accounting bill.
+- `fee_ledger_states`: **additional** exact fill-to-bill ledger coverage,
+  requiring every fill to have one uniquely identified same-currency bill.
+  Missing bills remain `incomplete` even if fill fees match position fees.
+
+Both checks reuse the existing strict position-cycle verifier. They do not
+guess an account owner, fill the gap with zero, infer funding by time, or
+convert USDC to USD. Reports are redacted aggregates only.
+
+Try the included synthetic mixed-evidence sample:
+
+```sh
+freqtrade-truth okx-native-report --input examples/okx-fee-evidence.synthetic.json
+```
+
+Real-account read-only checkpoint: 24 of 28 closed trades independently
+matched native fill fees to position fees; all 24 lacked full linked trade
+fee-bill coverage, four lacked a strictly identified position cycle.
+**This is not a claim of full USD Financial Truth v0.1.** See
+[fee verification scope](docs/okx-native-verification.md).
+
 ## Read-only OKX native-source verification (0.0.4 candidate)
 
 The installed CLI can now verify source-native OKX position-cycle arithmetic on
