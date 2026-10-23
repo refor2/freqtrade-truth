@@ -2,6 +2,19 @@
 
 All notable public changes to Freqtrade Truth are documented here.
 
+## Unreleased — 0.0.3 read-only candidate reporting (tag pending)
+
+- Reuse the existing deterministic grouping and numerical comparison core with
+  standalone redacted JSON, CSV and static HTML reports.
+- Add bounded local normalized snapshot input, offline CLI reporting and an
+  optional loopback-only GET HTTP view (no POST, JS, credentials or trading).
+- Explicitly expose numeric results as *candidates*, always unverified for
+  cross-system trade identity and account financial truth.
+- Add full synthetic match/review/incomplete, unsafe input, redaction and HTTP
+  regression tests. Includes existing MyOKX XPERP native USDC source checks.
+- **Not** a stable financial reconciliation v0.1 release: the verified ownership,
+  field attribution and event-time USD valuation gates remain open in issue #15.
+
 ## Unreleased — 0.0.2 pre-alpha release candidate (tag pending)
 
 The 0.0.2 code integrates the independent Bybit/Freqtrade evidence drafts and
