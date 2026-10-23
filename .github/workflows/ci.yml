@@ -105,6 +105,7 @@ jobs:
           freqtrade-truth okx-check --help
           python -m freqtrade_truth okx-check --help
           freqtrade-truth okx-native-report --input examples/okx-native.synthetic.json
+          freqtrade-truth okx-native-report --input examples/okx-fee-evidence.synthetic.json
           freqtrade-truth report --input examples/candidate-report.synthetic.json --format json
           freqtrade-truth report --input examples/candidate-report.synthetic.json --format csv
           freqtrade-truth report --input examples/candidate-report.synthetic.json --format html
