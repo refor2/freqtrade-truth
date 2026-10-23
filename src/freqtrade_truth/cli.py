@@ -279,6 +279,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     serve.add_argument("--input", required=True, help="Local normalized JSON snapshot.")
     serve.add_argument("--port", type=int, default=8767)
+    native = subparsers.add_parser(
+        "okx-native-report",
+        help="Offline sanitized MyOKX source-native evidence check; no USD/account proof.",
+    )
+    native.add_argument("--input", required=True, help="Local sanitized GET-only evidence JSON.")
+    native.add_argument(
+        "--tolerance",
+        default="0.00000001",
+        help="Explicit source-native Decimal arithmetic tolerance.",
+    )
     return parser
 
 
@@ -318,6 +328,32 @@ def main(
     out = stdout or sys.stdout
     err = stderr or sys.stderr
     env = environ if environ is not None else os.environ
+
+    if args.command == "okx-native-report":
+        from decimal import Decimal, InvalidOperation
+        from pathlib import Path
+
+        from freqtrade_truth.api.native_report import native_source_report
+        from freqtrade_truth.api.snapshot import MAX_BYTES
+
+        try:
+            tol = Decimal(args.tolerance)
+            if not tol.is_finite() or tol < 0:
+                raise ValueError("invalid tolerance")
+            source = Path(args.input)
+            if source.is_symlink() or not source.is_file() or source.stat().st_size > MAX_BYTES:
+                raise ValueError("invalid source")
+            with source.open("rb") as handle:
+                data = handle.read(MAX_BYTES + 1)
+            if len(data) > MAX_BYTES:
+                raise ValueError("input exceeds limit")
+            snapshot = json.loads(data.decode("utf-8"))
+            summary = native_source_report(snapshot, tolerance=tol)
+        except (OSError, ValueError, UnicodeError, InvalidOperation):
+            print("ERROR: invalid or incomplete native evidence", file=err)
+            return 2
+        print(json.dumps(summary, sort_keys=True), file=out)
+        return 0
 
     if args.command in ("report", "serve"):
         from freqtrade_truth.api.reporting import as_csv, as_html, as_json
