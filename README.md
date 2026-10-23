@@ -17,6 +17,26 @@ See [OKX first-run instructions](docs/okx-quickstart.md) and
 [OKX source-adapter limits](docs/okx-adapter.md). **Position-history numeric
 values do not prove trade ownership or account-wide financial correctness.**
 
+## Ready-to-use offline reports (0.0.3 candidate)
+
+The local report interface is operational, read-only and uses the existing
+normalization/reconciliation core. It accepts normalized data (not raw exchange
+credentials), and emits **redacted by default** JSON, CSV or static HTML.
+There is also a **localhost-only GET report API**:
+
+```bash
+freqtrade-truth report --input examples/candidate-report.synthetic.json --format json
+freqtrade-truth report --input examples/candidate-report.synthetic.json --format csv
+freqtrade-truth report --input examples/candidate-report.synthetic.json --format html > report.html
+freqtrade-truth serve --input examples/candidate-report.synthetic.json --port 8767
+```
+
+This is a functioning numerical comparison/report library, **not** a finished
+authoritative financial truth engine: the explicit `numeric_status=match`
+is **not an identity-verified match**. All reports expose
+`verified_trade_identity=false`. See [reporting usage and schema](docs/candidate-reporting.md)
+and [identity review issue #15](https://github.com/refor2/freqtrade-truth/issues/15).
+
 ## Try it in one minute — entirely offline
 
 ```bash
