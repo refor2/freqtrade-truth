@@ -17,6 +17,21 @@ See [OKX first-run instructions](docs/okx-quickstart.md) and
 [OKX source-adapter limits](docs/okx-adapter.md). **Position-history numeric
 values do not prove trade ownership or account-wide financial correctness.**
 
+## Read-only OKX native-source verification (0.0.4 candidate)
+
+The installed CLI can now verify source-native OKX position-cycle arithmetic on
+local **sanitized GET-only evidence** while preserving rejected ambiguity.
+This adds NO trading engine, live integration, 1-second fuzzy matching or USD
+conversion:
+
+```bash
+freqtrade-truth okx-native-report --input examples/okx-native.synthetic.json
+```
+
+Expected synthetic counts: 2 consistent, 1 different, 1 unknown. The output
+never exposes private IDs, fills or amounts, and explicitly marks account/FX
+verification as false. See [proof and limitations](docs/okx-native-verification.md).
+
 ## Ready-to-use offline reports (0.0.3 candidate)
 
 The local report interface is operational, read-only and uses the existing
