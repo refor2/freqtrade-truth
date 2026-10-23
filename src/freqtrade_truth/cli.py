@@ -37,6 +37,7 @@ from freqtrade_truth.adapters.okx_positions_history import OkxPositionHistoryErr
 from freqtrade_truth.core.models import ClosedTradeQuery
 from freqtrade_truth.offline_demo import build_offline_demo
 from freqtrade_truth.okx_cli import OkxCheckConfig, run_okx_check
+from freqtrade_truth.okx_instruments import OkxInstrumentPreflightError
 
 _DEFAULT_BYBIT_BASE_URL = "https://api.bybit.com"
 _MAX_SMOKE_WINDOW_HOURS = 168
@@ -244,6 +245,16 @@ def build_parser() -> argparse.ArgumentParser:
     okx.add_argument("--inst-type", required=True, help="SWAP or FUTURES.")
     okx.add_argument("--settle", required=True, help="Qualified native settlement currency.")
     okx.add_argument("--pair", required=True, help="Exact canonical Freqtrade pair.")
+    okx.add_argument(
+        "--source-amount-ccy",
+        default=None,
+        help="Actual OKX position-history monetary unit, e.g. USDC for isolated XPERP.",
+    )
+    okx.add_argument(
+        "--isolated-xperp",
+        action="store_true",
+        help="Explicit special case: isolated USD-settled XPERP with native USDC amounts.",
+    )
     okx.add_argument("--hours", default="24", help="Read window in hours, 1..2160.")
     okx.add_argument("--limit", default="50", help="Maximum returned rows, 1..100.")
     okx.add_argument(
@@ -253,7 +264,54 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print non-identifying source preview JSON.",
     )
 
+    report = subparsers.add_parser(
+        "report", help="Offline candidate-only JSON/CSV/HTML report from local normalized data."
+    )
+    report.add_argument("--input", required=True, help="Local normalized JSON snapshot.")
+    report.add_argument("--format", choices=("json", "csv", "html"), default="json")
+    report.add_argument(
+        "--include-values",
+        action="store_true",
+        help="Explicitly include potentially private instrument and amount values.",
+    )
+    serve = subparsers.add_parser(
+        "serve", help="Serve a redacted candidate report on localhost only (GET-only)."
+    )
+    serve.add_argument("--input", required=True, help="Local normalized JSON snapshot.")
+    serve.add_argument("--port", type=int, default=8767)
+    native = subparsers.add_parser(
+        "okx-native-report",
+        help="Offline sanitized MyOKX source-native evidence check; no USD/account proof.",
+    )
+    native.add_argument("--input", required=True, help="Local sanitized GET-only evidence JSON.")
+    native.add_argument(
+        "--tolerance",
+        default="0.00000001",
+        help="Explicit source-native Decimal arithmetic tolerance.",
+    )
     return parser
+
+
+def _load_candidate_report(path: str, *, include_values: bool = False) -> dict[str, object]:
+    """Bounded local input; do not leak file content or credentials on failure."""
+    from pathlib import Path
+
+    from freqtrade_truth.api.reporting import build_report
+    from freqtrade_truth.api.snapshot import MAX_BYTES, parse_snapshot
+
+    source = Path(path)
+    if source.is_symlink() or not source.is_file():
+        raise ValueError("source must be a regular non-symlink file")
+    if source.stat().st_size > MAX_BYTES:
+        raise ValueError("snapshot exceeds local input limit")
+    with source.open("rb") as handle:
+        data = handle.read(MAX_BYTES + 1)
+    if len(data) > MAX_BYTES:
+        raise ValueError("snapshot exceeds local input limit")
+    # Use Decimal for JSON numeric tokens, but all financial fields must be strings.
+    parsed = json.loads(data.decode("utf-8"), parse_float=__import__("decimal").Decimal)
+    left, right, tolerance = parse_snapshot(parsed)
+    return build_report(left, right, tolerance=tolerance, include_values=include_values)
 
 
 def main(
@@ -270,6 +328,61 @@ def main(
     out = stdout or sys.stdout
     err = stderr or sys.stderr
     env = environ if environ is not None else os.environ
+
+    if args.command == "okx-native-report":
+        from decimal import Decimal, InvalidOperation
+        from pathlib import Path
+
+        from freqtrade_truth.api.native_report import native_source_report
+        from freqtrade_truth.api.snapshot import MAX_BYTES
+
+        try:
+            tol = Decimal(args.tolerance)
+            if not tol.is_finite() or tol < 0:
+                raise ValueError("invalid tolerance")
+            source = Path(args.input)
+            if source.is_symlink() or not source.is_file() or source.stat().st_size > MAX_BYTES:
+                raise ValueError("invalid source")
+            with source.open("rb") as handle:
+                data = handle.read(MAX_BYTES + 1)
+            if len(data) > MAX_BYTES:
+                raise ValueError("input exceeds limit")
+            snapshot = json.loads(data.decode("utf-8"))
+            summary = native_source_report(snapshot, tolerance=tol)
+        except (OSError, ValueError, UnicodeError, InvalidOperation):
+            print("ERROR: invalid or incomplete native evidence", file=err)
+            return 2
+        print(json.dumps(summary, sort_keys=True), file=out)
+        return 0
+
+    if args.command in ("report", "serve"):
+        from freqtrade_truth.api.reporting import as_csv, as_html, as_json
+
+        try:
+            result = _load_candidate_report(
+                str(args.input), include_values=bool(getattr(args, "include_values", False))
+            )
+        except (OSError, ValueError, UnicodeError, json.JSONDecodeError):
+            print("ERROR: invalid local snapshot or incomplete normalized source", file=err)
+            return 2
+        if args.command == "report":
+            render = {"json": as_json, "csv": as_csv, "html": as_html}[args.format]
+            print(render(result), file=out, end="")
+            return 0
+        if not 1 <= args.port <= 65535:
+            print("ERROR: localhost port must be 1..65535", file=err)
+            return 2
+        from wsgiref.simple_server import make_server
+
+        from freqtrade_truth.api.http import make_application
+
+        try:
+            with make_server("127.0.0.1", args.port, make_application(result)) as server:
+                print(f"GET-only candidate report: http://127.0.0.1:{args.port}/", file=out)
+                server.serve_forever()
+        except (OSError, KeyboardInterrupt):
+            return 0
+        return 0
 
     if args.command == "demo":
         demo_result = build_offline_demo()
@@ -292,9 +405,16 @@ def main(
                 hours=int(args.hours),
                 limit=int(args.limit),
                 json_output=bool(args.json_output),
+                source_amount_ccy=args.source_amount_ccy,
+                isolated_xperp=bool(args.isolated_xperp),
             )
             result_okx = asyncio.run(run_okx_check(config_okx, environ=env))
-        except (OkxPositionHistoryError, HttpTransportError, ValueError) as exc:
+        except (
+            OkxPositionHistoryError,
+            OkxInstrumentPreflightError,
+            HttpTransportError,
+            ValueError,
+        ) as exc:
             print(f"ERROR: {_redact_message(str(exc), env)}", file=err)
             return 2
         except Exception as exc:  # pragma: no cover - fail closed, no raw payload

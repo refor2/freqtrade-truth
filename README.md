@@ -17,6 +17,68 @@ See [OKX first-run instructions](docs/okx-quickstart.md) and
 [OKX source-adapter limits](docs/okx-adapter.md). **Position-history numeric
 values do not prove trade ownership or account-wide financial correctness.**
 
+## OKX fee-component evidence (0.0.5 candidate)
+
+Read-only `okx-native-report` now distinguishes two separate financial claims:
+
+- `fee_fill_position_states`: exact source-native sum of signed fees from
+  every confirmed OKX fill versus signed fee in the uniquely identified
+  position-history row. This does **not** require each accounting bill.
+- `fee_ledger_states`: **additional** exact fill-to-bill ledger coverage,
+  requiring every fill to have one uniquely identified same-currency bill.
+  Missing bills remain `incomplete` even if fill fees match position fees.
+
+Both checks reuse the existing strict position-cycle verifier. They do not
+guess an account owner, fill the gap with zero, infer funding by time, or
+convert USDC to USD. Reports are redacted aggregates only.
+
+Try the included synthetic mixed-evidence sample:
+
+```sh
+freqtrade-truth okx-native-report --input examples/okx-fee-evidence.synthetic.json
+```
+
+Real-account read-only checkpoint: 24 of 28 closed trades independently
+matched native fill fees to position fees; all 24 lacked full linked trade
+fee-bill coverage, four lacked a strictly identified position cycle.
+**This is not a claim of full USD Financial Truth v0.1.** See
+[fee verification scope](docs/okx-native-verification.md).
+
+## Read-only OKX native-source verification (0.0.4 candidate)
+
+The installed CLI can now verify source-native OKX position-cycle arithmetic on
+local **sanitized GET-only evidence** while preserving rejected ambiguity.
+This adds NO trading engine, live integration, 1-second fuzzy matching or USD
+conversion:
+
+```bash
+freqtrade-truth okx-native-report --input examples/okx-native.synthetic.json
+```
+
+Expected synthetic counts: 2 consistent, 1 different, 1 unknown. The output
+never exposes private IDs, fills or amounts, and explicitly marks account/FX
+verification as false. See [proof and limitations](docs/okx-native-verification.md).
+
+## Ready-to-use offline reports (0.0.3 candidate)
+
+The local report interface is operational, read-only and uses the existing
+normalization/reconciliation core. It accepts normalized data (not raw exchange
+credentials), and emits **redacted by default** JSON, CSV or static HTML.
+There is also a **localhost-only GET report API**:
+
+```bash
+freqtrade-truth report --input examples/candidate-report.synthetic.json --format json
+freqtrade-truth report --input examples/candidate-report.synthetic.json --format csv
+freqtrade-truth report --input examples/candidate-report.synthetic.json --format html > report.html
+freqtrade-truth serve --input examples/candidate-report.synthetic.json --port 8767
+```
+
+This is a functioning numerical comparison/report library, **not** a finished
+authoritative financial truth engine: the explicit `numeric_status=match`
+is **not an identity-verified match**. All reports expose
+`verified_trade_identity=false`. See [reporting usage and schema](docs/candidate-reporting.md)
+and [identity review issue #15](https://github.com/refor2/freqtrade-truth/issues/15).
+
 ## Try it in one minute — entirely offline
 
 ```bash

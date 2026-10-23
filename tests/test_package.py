@@ -6,7 +6,7 @@ from freqtrade_truth import __version__
 
 
 def test_version_is_defined() -> None:
-    assert __version__ == "0.0.2"
+    assert __version__ == "0.0.5"
 
 
 def test_runtime_version_matches_package_metadata() -> None:

@@ -104,6 +104,19 @@ jobs:
           python -m freqtrade_truth demo --json
           freqtrade-truth okx-check --help
           python -m freqtrade_truth okx-check --help
+          freqtrade-truth okx-native-report --input examples/okx-native.synthetic.json
+          freqtrade-truth okx-native-report --input examples/okx-fee-evidence.synthetic.json
+          freqtrade-truth report --input examples/candidate-report.synthetic.json --format json
+          freqtrade-truth report --input examples/candidate-report.synthetic.json --format csv
+          freqtrade-truth report --input examples/candidate-report.synthetic.json --format html
+
+      - name: Upload installable distributions
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: freqtrade-truth-build-${{ github.sha }}
+          path: dist/
+          retention-days: 14
+          if-no-files-found: error
 
   tests:
     runs-on: ubuntu-latest

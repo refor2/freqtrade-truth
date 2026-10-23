@@ -209,3 +209,76 @@ def test_public_adapter_does_not_require_read_account_secrets() -> None:
     t = FakeTransport(response())
     assert asyncio.run(reader(t).fetch_closed_trades(query())) == ()
     assert all(path == "api/v5/account/positions-history" for path, _ in t.calls)
+
+
+def xperp_reader(t: FakeTransport) -> OkxPositionHistoryAdapter:
+    return OkxPositionHistoryAdapter(
+        t,
+        inst_id="BTC-USD-310404",
+        inst_type="FUTURES",
+        settlement_currency="USDC",
+        normalized_instrument="BTC/USD:USD-310404",
+        isolated_xperp=True,
+    )
+
+
+def xperp_payload(**changes: JsonValue) -> dict[str, JsonValue]:
+    record = item(
+        ccy="USDC",
+        pnl="1.2",
+        fee="-0.1",
+        funding="-0.1",
+        penalty="0",
+        settled="",
+        net="1.0",
+    )
+    record["mgnMode"] = "isolated"
+    record.update(changes)
+    return record
+
+
+def test_verified_isolated_xperp_usdc_native_arithmetic_not_invented_usd() -> None:
+    t = FakeTransport(response(xperp_payload()))
+    rows = asyncio.run(xperp_reader(t).fetch_closed_trades(query()))
+    assert len(rows) == 1
+    row = rows[0]
+    assert row.instrument == "BTC/USD:USD-310404"
+    assert row.settlement_currency == "USDC"
+    assert row.price_pnl == Decimal("1.2")
+    assert row.trading_fees == Decimal("-0.1")
+    assert row.funding == Decimal("-0.1")
+    assert row.other_adjustments == Decimal("0")
+    assert row.reported_net_pnl == Decimal("1.0")
+
+
+@pytest.mark.parametrize(
+    ("changes", "reason"),
+    [
+        ({"mgnMode": "cross"}, "isolated"),
+        ({"mgnMode": None}, "isolated"),
+        ({"settledPnl": "0"}, "settledPnl"),
+        ({"settledPnl": "1"}, "settledPnl"),
+        ({"ccy": "USD"}, "ccy"),
+        ({"realizedPnl": "1.2"}, "equation"),
+        ({"liqPenalty": None}, "incomplete"),
+    ],
+)
+def test_xperp_invalid_economic_evidence_fails_closed(
+    changes: dict[str, JsonValue], reason: str
+) -> None:
+    t = FakeTransport(response(xperp_payload(**changes)))
+    with pytest.raises(OkxPositionHistoryError, match=reason):
+        asyncio.run(xperp_reader(t).fetch_closed_trades(query()))
+
+
+def test_xperp_flag_rejected_for_swap_or_non_usdc_product() -> None:
+    t = FakeTransport()
+    with pytest.raises(ValueError, match="xperp"):
+        OkxPositionHistoryAdapter(
+            t,
+            inst_id="BTC-USD-SWAP",
+            inst_type="SWAP",
+            settlement_currency="USDC",
+            normalized_instrument="BTC/USD:USD",
+            isolated_xperp=True,
+        )

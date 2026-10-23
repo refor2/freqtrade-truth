@@ -62,7 +62,12 @@ The command makes **only signed GET requests** to the selected official OKX
 `/api/v5/account/positions-history` endpoint. It does not modify anything
 at OKX or inside Freqtrade. It summarizes fully closed source positions,
 counts available reported PnL values, and emits an optional *native-currency
-numeric preview* if every returned record has a reported value. It never
+numeric preview* if every returned record has a reported value. The
+\`native_accounting_counts\` field independently checks the arithmetic of
+source-native signed price PnL, fees, funding and other adjustments versus
+reported native net; \`consistent\` does NOT verify the identity or ownership
+of the trade. Missing components are \`incomplete\`, never treated as zero.
+No automatic USD valuation or stablecoin parity is inferred. It never
 outputs raw position IDs, order IDs, per-trade amount rows or credentials.
 
 The JSON **always** contains:
@@ -96,3 +101,56 @@ Nothing here enables or changes BOT2/V891 execution.
 - [OKX official API V5 documentation](https://www.okx.com/docs-v5/en/)
 - [OKX EEA API guide](https://my.okx.com/docs-v5/)
 - [OKX EEA domain FAQ](https://www.okx.com/en-eu/help/api-faq-eea)
+
+
+## Special case: isolated XPERP USD contract, USDC source values
+
+OKX may return a `FUTURES` instrument with `ruleType=xperp`,
+`settleCcy=USD` while historical position amounts are expressed with
+`ccy=USDC`. This is **not** permission to treat USDC as USD.
+
+After independently confirming **all** the following from OKX instrument
+metadata and the account's specific position-history evidence:
+
+- `instType=FUTURES`, `ruleType=xperp`, `settleCcy=USD`;
+- `mgnMode=isolated` and native historical position `ccy=USDC`;
+- an actual expiry-style instrument ID, and the correctly matched Freqtrade
+  pair with contract suffix `:USD-<expiry>`;
+
+run the following **illustrative placeholder** (replace the expiry date and
+the entire symbol with the instrument actually supported by your account):
+
+```bash
+freqtrade-truth okx-check \
+  --region eea \
+  --inst-id BTC-USD_UM_XPERP-310404 \
+  --inst-type FUTURES \
+  --settle USD \
+  --pair BTC/USD:USD-310404 \
+  --source-amount-ccy USDC \
+  --isolated-xperp \
+  --hours 24 \
+  --json
+```
+
+The `--isolated-xperp` option **requires an automatic public OKX EEA
+instrument metadata preflight** before any signed account GET: the exact
+instrument must currently be `live`, `FUTURES`, `ruleType=xperp`,
+`ctType=linear`, and `settleCcy=USD`. Missing, pre-market, delisted or
+contradictory metadata **fail closed**. The native instrument example
+`BTC-USD_UM_XPERP-310404` was observed on OKX EEA public instruments API
+on 2026-10-22; it may no longer be active later, and the example does
+not prove account-specific permission to trade it.
+
+The source rows are subsequently checked for isolated margin, full close,
+USDC native currency, and absence of `settledPnl` (not applicable to isolated
+FUTURES). The source-native equation uses `pnl + fee + fundingFee +
+liqPenalty = realizedPnl` (since `settledPnl` is inapplicable). Any
+missing native arithmetic component, non-isolated position, unexpected
+`settledPnl`, mismatched currency, or inconsistent equation causes a
+**fail-closed error**. Ordinary SWAP and Bybit paths remain unchanged.
+
+The JSON fields `settlement_currency_claim=USD` and
+`source_amount_currency_claim=USDC` are **explicitly distinct**.
+The preview total is in **USDC**, not USD. It still does not prove full
+account history or that a given Freqtrade order owns an OKX position.

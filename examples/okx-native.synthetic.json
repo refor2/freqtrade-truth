@@ -1,0 +1,273 @@
+{
+  "schema": "freqtrade-truth.okx-native.v1",
+  "entries": [
+    {
+      "side": "long",
+      "source_payload": {
+        "status": "PASS",
+        "read_only": true,
+        "financial_truth": false,
+        "linkage": "STRONG_EXCHANGE_ORDER_ID",
+        "exchange_order_ids": [
+          "order-in",
+          "order-out"
+        ],
+        "exchange_orders": [
+          {
+            "order_id": "order-in",
+            "role": "ENTRY",
+            "ft_order_side": "buy"
+          },
+          {
+            "order_id": "order-out",
+            "role": "EXIT",
+            "ft_order_side": "sell"
+          }
+        ],
+        "exchange_evidence": {
+          "status": "PASS",
+          "read_only": true,
+          "identity_verified": true,
+          "fill_truncated": false,
+          "bill_truncated": false,
+          "position_history_truncated": false,
+          "inst_id": "SYNTHETIC-INST-XPERP",
+          "algo_order_links": [],
+          "fills": [
+            {
+              "ord_id": "order-in",
+              "trade_id": "fill-1",
+              "inst_id": "SYNTHETIC-INST-XPERP",
+              "fill_time": "1000"
+            },
+            {
+              "ord_id": "order-out",
+              "trade_id": "fill-2",
+              "inst_id": "SYNTHETIC-INST-XPERP",
+              "fill_time": "1200"
+            }
+          ],
+          "position_history": [
+            {
+              "inst_id": "SYNTHETIC-INST-XPERP",
+              "type": "2",
+              "direction": "long",
+              "mgn_mode": "isolated",
+              "c_time": "900",
+              "u_time": "1250",
+              "pos_id": "p1",
+              "ccy": "USDC",
+              "settled_pnl": "",
+              "pnl": 3.4,
+              "fee": -0.2,
+              "funding_fee": -0.1,
+              "liq_penalty": 0.0,
+              "realized_pnl": 3.1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "side": "long",
+      "source_payload": {
+        "status": "PASS",
+        "read_only": true,
+        "financial_truth": false,
+        "linkage": "STRONG_EXCHANGE_ORDER_ID",
+        "exchange_order_ids": [
+          "order-in",
+          "order-out"
+        ],
+        "exchange_orders": [
+          {
+            "order_id": "order-in",
+            "role": "ENTRY",
+            "ft_order_side": "buy"
+          },
+          {
+            "order_id": "order-out",
+            "role": "EXIT",
+            "ft_order_side": "sell"
+          }
+        ],
+        "exchange_evidence": {
+          "status": "PASS",
+          "read_only": true,
+          "identity_verified": true,
+          "fill_truncated": false,
+          "bill_truncated": false,
+          "position_history_truncated": false,
+          "inst_id": "SYNTHETIC-INST-XPERP",
+          "algo_order_links": [],
+          "fills": [
+            {
+              "ord_id": "order-in",
+              "trade_id": "fill-1",
+              "inst_id": "SYNTHETIC-INST-XPERP",
+              "fill_time": "5000"
+            },
+            {
+              "ord_id": "order-out",
+              "trade_id": "fill-2",
+              "inst_id": "SYNTHETIC-INST-XPERP",
+              "fill_time": "5200"
+            }
+          ],
+          "position_history": [
+            {
+              "inst_id": "SYNTHETIC-INST-XPERP",
+              "type": "2",
+              "direction": "long",
+              "mgn_mode": "isolated",
+              "c_time": "4900",
+              "u_time": "5250",
+              "pos_id": "p1",
+              "ccy": "USDC",
+              "settled_pnl": "",
+              "pnl": 3.4,
+              "fee": -0.2,
+              "funding_fee": -0.1,
+              "liq_penalty": 0.0,
+              "realized_pnl": 3.1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "side": "long",
+      "source_payload": {
+        "status": "PASS",
+        "read_only": true,
+        "financial_truth": false,
+        "linkage": "STRONG_EXCHANGE_ORDER_ID",
+        "exchange_order_ids": [
+          "order-in",
+          "order-out"
+        ],
+        "exchange_orders": [
+          {
+            "order_id": "order-in",
+            "role": "ENTRY",
+            "ft_order_side": "buy"
+          },
+          {
+            "order_id": "order-out",
+            "role": "EXIT",
+            "ft_order_side": "sell"
+          }
+        ],
+        "exchange_evidence": {
+          "status": "PASS",
+          "read_only": true,
+          "identity_verified": true,
+          "fill_truncated": false,
+          "bill_truncated": false,
+          "position_history_truncated": false,
+          "inst_id": "SYNTHETIC-INST-XPERP",
+          "algo_order_links": [],
+          "fills": [
+            {
+              "ord_id": "order-in",
+              "trade_id": "fill-1",
+              "inst_id": "SYNTHETIC-INST-XPERP",
+              "fill_time": "10000"
+            },
+            {
+              "ord_id": "order-out",
+              "trade_id": "fill-2",
+              "inst_id": "SYNTHETIC-INST-XPERP",
+              "fill_time": "10200"
+            }
+          ],
+          "position_history": [
+            {
+              "inst_id": "SYNTHETIC-INST-XPERP",
+              "type": "2",
+              "direction": "long",
+              "mgn_mode": "isolated",
+              "c_time": "10001",
+              "u_time": "10250",
+              "pos_id": "p2",
+              "ccy": "USDC",
+              "settled_pnl": "",
+              "pnl": 3.4,
+              "fee": -0.2,
+              "funding_fee": -0.1,
+              "liq_penalty": 0.0,
+              "realized_pnl": 3.1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "side": "long",
+      "source_payload": {
+        "status": "PASS",
+        "read_only": true,
+        "financial_truth": false,
+        "linkage": "STRONG_EXCHANGE_ORDER_ID",
+        "exchange_order_ids": [
+          "order-in",
+          "order-out"
+        ],
+        "exchange_orders": [
+          {
+            "order_id": "order-in",
+            "role": "ENTRY",
+            "ft_order_side": "buy"
+          },
+          {
+            "order_id": "order-out",
+            "role": "EXIT",
+            "ft_order_side": "sell"
+          }
+        ],
+        "exchange_evidence": {
+          "status": "PASS",
+          "read_only": true,
+          "identity_verified": true,
+          "fill_truncated": false,
+          "bill_truncated": false,
+          "position_history_truncated": false,
+          "inst_id": "SYNTHETIC-INST-XPERP",
+          "algo_order_links": [],
+          "fills": [
+            {
+              "ord_id": "order-in",
+              "trade_id": "fill-1",
+              "inst_id": "SYNTHETIC-INST-XPERP",
+              "fill_time": "15000"
+            },
+            {
+              "ord_id": "order-out",
+              "trade_id": "fill-2",
+              "inst_id": "SYNTHETIC-INST-XPERP",
+              "fill_time": "15200"
+            }
+          ],
+          "position_history": [
+            {
+              "inst_id": "SYNTHETIC-INST-XPERP",
+              "type": "2",
+              "direction": "long",
+              "mgn_mode": "isolated",
+              "c_time": "14900",
+              "u_time": "15250",
+              "pos_id": "p3",
+              "ccy": "USDC",
+              "settled_pnl": "",
+              "pnl": 3.4,
+              "fee": -0.2,
+              "funding_fee": -0.1,
+              "liq_penalty": 0.0,
+              "realized_pnl": 4.2
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
