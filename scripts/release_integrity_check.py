@@ -117,6 +117,13 @@ def _sdist_findings(sdist: Path, version: str) -> list[str]:
     with tarfile.open(sdist, mode="r:gz") as archive:
         members = archive.getmembers()
         root_prefix = f"freqtrade_truth-{version}/"
+        required_examples = {
+            root_prefix + "examples/candidate-report.synthetic.json",
+            root_prefix + "docs/candidate-reporting.md",
+        }
+        missing = required_examples - {member.name for member in members}
+        for item in sorted(missing):
+            findings.append(f"{sdist.name}: missing installable example/doc: {item}")
         for member in members:
             unsafe = _unsafe_archive_member(member.name)
             if unsafe:
