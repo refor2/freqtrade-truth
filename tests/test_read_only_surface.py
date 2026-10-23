@@ -80,4 +80,28 @@ def test_cli_exposes_only_reviewed_read_only_commands() -> None:
     ]
 
     assert len(subparser_actions) == 1
-    assert set(subparser_actions[0].choices) == {"bybit-check", "okx-check", "demo"}
+    assert set(subparser_actions[0].choices) == {
+        "bybit-check",
+        "okx-check",
+        "demo",
+        "report",
+        "serve",
+    }
+
+
+def test_local_report_http_surface_is_get_only_and_has_no_trade_routes() -> None:
+    from freqtrade_truth.api.http import make_application
+
+    report: dict[str, object] = {"groups": [], "counts": {}}
+    app = make_application(report)
+    statuses: list[str] = []
+
+    def start(status: str, headers: object) -> None:
+        statuses.append(status)
+
+    for method in ("POST", "PUT", "DELETE", "PATCH"):
+        app({"REQUEST_METHOD": method, "PATH_INFO": "/"}, start)
+        assert statuses[-1].startswith("405")
+    for route in ("/trade/42", "/orders", "/cancel", "/transfer"):
+        app({"REQUEST_METHOD": "GET", "PATH_INFO": route}, start)
+        assert statuses[-1].startswith("404")
