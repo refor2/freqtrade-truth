@@ -2,6 +2,21 @@
 
 All notable public changes to Freqtrade Truth are documented here.
 
+## Unreleased — 0.0.5 independent OKX fee evidence gates (tag pending)
+
+- Reuse strict position-cycle/linked-order identity and Decimal arithmetic:
+  independently compare complete OKX fill fees to position-history fee.
+- Keep the separate ledger completeness gate fail-closed; every fill requires
+  a unique matching bill ID, exact order ID, trade ID, native currency and
+  fee. Incomplete, ambiguous and conflicting ownership are never MATCH.
+- Batch anti-duplication across trade claims for both position cycles and
+  bill IDs; no fee/ledger values or identifiers leak from the CLI report.
+- Read-only live-account evidence 2026-10-23: 28 closed records, 24/24
+  source-native fill/position fees matched and 24/24 incomplete linked bills,
+  four strict cycle unknown; ZERO event-time USD conversion proof.
+- Additional synthetic negative fixtures, packaging and CI; original BOT2
+  and production UI are unchanged. v0.1 identity and USD gates remain open.
+
 ## Unreleased — 0.0.4 OKX source-native cycle verification (tag pending)
 
 - Reuse the existing strict OKX sanitized GET-only account evidence shape and the
