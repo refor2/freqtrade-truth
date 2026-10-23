@@ -32,3 +32,27 @@ All 28 available BOT2 closed trade records were processed using the existing c48
 OKX docs explicitly state posId is reused after close/reopen (https://www.okx.com/docs-v5/trick_en/). Do not loosen the time predicate or assign a reused posId without separate evidence. Source limitations and final v0.1 Financial Truth contract gates remain recorded in issue https://github.com/refor2/freqtrade-truth/issues/15 .
 
 This is a usable library feature, not a claim of production financial MATCH or completed historical USD valuation.
+
+
+## Fee ledger truth levels (0.0.5 pre-alpha)
+
+`fee_fill_position_states` independently compares exact signed fees from
+all Freqtrade-order-linked OKX fills and the selected OKX position-history
+fee. `fee_ledger_states` checks a stronger and distinct claim: every fill
+must additionally have a unique same-instrument, same-native-currency account
+bill of trade subtype 1/2 with matching order ID, trade ID and signed fee.
+Cross-trade reused bill IDs or cycle keys fail closed. A funding entry
+subtype 173/174 cannot be substituted for a trading-fee bill.
+
+Real-source evidence (2026-10-23): all 24 strictly selected USDC positions
+have an exact fill-fee total equal to their position-history fee within
+1e-8 USDC across 94 fills. None of those 24 had full order-fill-to-bill
+coverage: 22 missing one or more linked bill and two without linked trade
+bills; four further trades lacked strict cycle proof. Among the 24, 40 fills
+had exact linked bill keys and 54 with nonzero fees lacked matching linked
+bill keys. The GET source's PASS/zero truncation flags do not prove every
+accounting bill was returned or retained.
+
+The independent fee check does not resolve ownership of unlinked funding,
+USD/USDC settlement conversion, or the four subsecond lifecycle identities.
+Both value `MATCH` and full Financial Truth `MATCH` must remain separate.
