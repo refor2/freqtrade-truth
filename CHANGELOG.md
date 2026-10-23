@@ -2,6 +2,24 @@
 
 All notable public changes to Freqtrade Truth are documented here.
 
+## Unreleased — 0.0.4 OKX source-native cycle verification (tag pending)
+
+- Reuse the existing strict OKX sanitized GET-only account evidence shape and the
+  previously audited `audit_native_record()` native money equation.
+- New deterministic library verifier covers strong Freqtrade order IDs, conditional
+  stoploss child IDs, strict OKX fill membership and unique non-overlapping
+  cTime/uTime position cycles, source truncation and missing amounts.
+- `PositionNativeStatus` clearly separates consistent/different/unknown/conflict;
+  repeated `posId` on separate cycles is allowed, two claims on the *same*
+  complete cycle are rejected.
+- Local `okx-native-report` CLI consumes sanitized snapshots and emits **counts
+  only**, never IDs/amounts, without external account access or writes.
+- Real-account read-only test on 2026-10-23: 24 source-native consistent, 4 unknown,
+  zero false USD/account certification; no production BOT2 or UI changes.
+- Additional synthetic negative tests, exact-package/CI verification, docs.
+- Still **no independent USD settlement FX or 4/4 strict cycle identity**;
+  a signed account reader is required for source trust. Not v0.1 Financial Truth.
+
 ## Unreleased — 0.0.3 read-only candidate reporting (tag pending)
 
 - Reuse the existing deterministic grouping and numerical comparison core with
