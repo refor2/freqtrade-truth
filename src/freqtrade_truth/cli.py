@@ -264,7 +264,44 @@ def build_parser() -> argparse.ArgumentParser:
         help="Print non-identifying source preview JSON.",
     )
 
+    report = subparsers.add_parser(
+        "report", help="Offline candidate-only JSON/CSV/HTML report from local normalized data."
+    )
+    report.add_argument("--input", required=True, help="Local normalized JSON snapshot.")
+    report.add_argument("--format", choices=("json", "csv", "html"), default="json")
+    report.add_argument(
+        "--include-values",
+        action="store_true",
+        help="Explicitly include potentially private instrument and amount values.",
+    )
+    serve = subparsers.add_parser(
+        "serve", help="Serve a redacted candidate report on localhost only (GET-only)."
+    )
+    serve.add_argument("--input", required=True, help="Local normalized JSON snapshot.")
+    serve.add_argument("--port", type=int, default=8767)
     return parser
+
+
+def _load_candidate_report(path: str, *, include_values: bool = False) -> dict[str, object]:
+    """Bounded local input; do not leak file content or credentials on failure."""
+    from pathlib import Path
+
+    from freqtrade_truth.api.reporting import build_report
+    from freqtrade_truth.api.snapshot import MAX_BYTES, parse_snapshot
+
+    source = Path(path)
+    if source.is_symlink() or not source.is_file():
+        raise ValueError("source must be a regular non-symlink file")
+    if source.stat().st_size > MAX_BYTES:
+        raise ValueError("snapshot exceeds local input limit")
+    with source.open("rb") as handle:
+        data = handle.read(MAX_BYTES + 1)
+    if len(data) > MAX_BYTES:
+        raise ValueError("snapshot exceeds local input limit")
+    # Use Decimal for JSON numeric tokens, but all financial fields must be strings.
+    parsed = json.loads(data.decode("utf-8"), parse_float=__import__("decimal").Decimal)
+    left, right, tolerance = parse_snapshot(parsed)
+    return build_report(left, right, tolerance=tolerance, include_values=include_values)
 
 
 def main(
@@ -281,6 +318,35 @@ def main(
     out = stdout or sys.stdout
     err = stderr or sys.stderr
     env = environ if environ is not None else os.environ
+
+    if args.command in ("report", "serve"):
+        from freqtrade_truth.api.reporting import as_csv, as_html, as_json
+
+        try:
+            result = _load_candidate_report(
+                str(args.input), include_values=bool(getattr(args, "include_values", False))
+            )
+        except (OSError, ValueError, UnicodeError, json.JSONDecodeError):
+            print("ERROR: invalid local snapshot or incomplete normalized source", file=err)
+            return 2
+        if args.command == "report":
+            render = {"json": as_json, "csv": as_csv, "html": as_html}[args.format]
+            print(render(result), file=out, end="")
+            return 0
+        if not 1 <= args.port <= 65535:
+            print("ERROR: localhost port must be 1..65535", file=err)
+            return 2
+        from wsgiref.simple_server import make_server
+
+        from freqtrade_truth.api.http import make_application
+
+        try:
+            with make_server("127.0.0.1", args.port, make_application(result)) as server:
+                print(f"GET-only candidate report: http://127.0.0.1:{args.port}/", file=out)
+                server.serve_forever()
+        except (OSError, KeyboardInterrupt):
+            return 0
+        return 0
 
     if args.command == "demo":
         demo_result = build_offline_demo()
