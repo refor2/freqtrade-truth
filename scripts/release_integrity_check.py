@@ -120,6 +120,8 @@ def _sdist_findings(sdist: Path, version: str) -> list[str]:
         required_examples = {
             root_prefix + "examples/candidate-report.synthetic.json",
             root_prefix + "docs/candidate-reporting.md",
+            root_prefix + "examples/okx-native.synthetic.json",
+            root_prefix + "docs/okx-native-verification.md",
         }
         missing = required_examples - {member.name for member in members}
         for item in sorted(missing):
