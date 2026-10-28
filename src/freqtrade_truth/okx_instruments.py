@@ -55,7 +55,11 @@ def _validate_sync(*, region: str, inst_id: str, inst_type: str, settle: str) ->
     connection = HTTPSConnection(host, None, timeout=8.0)
     response: Any = None
     try:
-        connection.request("GET", target, headers={"Accept": "application/json"})
+        connection.request(
+            "GET",
+            target,
+            headers={"Accept": "application/json", "User-Agent": "freqtrade-truth/0.0.7"},
+        )
         response = connection.getresponse()
         if response.status != 200:
             raise OkxInstrumentPreflightError("public instrument HTTP response not 200")

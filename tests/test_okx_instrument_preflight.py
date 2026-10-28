@@ -45,6 +45,7 @@ class Response:
 class FakeConnection:
     response = Response()
     calls: list[tuple[str, str, str]] = []
+    headers_seen: list[dict[str, str]] = []
 
     def __init__(self, host: str, port: int | None, timeout: float):
         assert port is None and timeout > 0
@@ -53,6 +54,7 @@ class FakeConnection:
     def request(self, method: str, target: str, headers: dict[str, str]) -> None:
         assert "OK-ACCESS-KEY" not in headers
         self.__class__.calls.append((self.host, method, target))
+        self.__class__.headers_seen.append(dict(headers))
 
     def getresponse(self) -> Response:
         return self.__class__.response
@@ -63,6 +65,7 @@ class FakeConnection:
 
 def check(monkeypatch: pytest.MonkeyPatch, response: Response | None = None) -> None:
     FakeConnection.calls.clear()
+    FakeConnection.headers_seen.clear()
     FakeConnection.response = response or Response()
     monkeypatch.setattr(mod, "HTTPSConnection", FakeConnection)
     asyncio.run(
@@ -87,6 +90,7 @@ def test_official_eea_public_instrument_preflight_exact_get_only(
             "/api/v5/public/instruments?instType=FUTURES&instId=BTC-USD-310404",
         )
     ]
+    assert FakeConnection.headers_seen[0]["User-Agent"] == "freqtrade-truth/0.0.7"
     assert res.closed
 
 

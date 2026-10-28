@@ -4,6 +4,11 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ## Unreleased — 0.0.7 exact bill query-window evidence (tag pending)
 
+- Fix OKX GET client identification on read-only public metadata preflight and
+  authenticated positions-history reads. Uses a stable, non-impersonating
+  User-Agent; adds synthetic header regression coverage. Authentication and
+  IP allowlist policies remain enforced by OKX.
+
 - Added strictly local `settlement-audit` CLI and an exact-position native
   event ledger reducer: explicit window/category completeness, partial-fill
   fee aggregation, signed funding, duplicate/foreign record rejection, precise
