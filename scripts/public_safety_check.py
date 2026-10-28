@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import ipaddress
 import re
 import subprocess
@@ -39,6 +40,47 @@ SECRET_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
         ),
     ),
 )
+
+# Hash-only private project boundary: public sources must not publish protected
+# deployment names even as scanner pattern literals.
+PRIVATE_PROJECT_FINGERPRINTS = frozenset(
+    {
+        "11158e7eb131a42def1adfd27bb42e812ed161916680e51169fdd02a954a12b9",
+        "22c9d49cdc49a44a216ab219e6c53940411337a7ad9af791a8021a7fa2d05f3e",
+        "24e047a54e20cd3cef5cab0860fb0d176584f75b5c18f3dd700c07f8739c4327",
+        "35f41255185da9ce5ae1067585a47d9f3a8915283a6d1c28b784042aae834c03",
+        "b8e7f06e71c52787b7f39633370f3d4e91a5e19064cf046378542abb015f9d6b",
+        "ed6a2fbf7a57988c8be3f3c6f8f149d89e221a68c3acadbb83b8d3eac16fd3cc",
+    }
+)
+_WORD_PATTERN = re.compile(r"\b[A-Za-z][A-Za-z0-9]{1,96}\b")
+
+
+def contains_private_project_label(
+    value: str,
+    *,
+    fingerprints: frozenset[str] = PRIVATE_PROJECT_FINGERPRINTS,
+) -> bool:
+    matches = list(_WORD_PATTERN.finditer(value))
+    for index in range(len(matches)):
+        for n in (1, 2, 3):
+            group = matches[index : index + n]
+            if len(group) != n:
+                break
+            # Only join literal whitespace-separated words. An official
+            # host like my.okx.com is not the same as an internal product name.
+            if any(
+                not value[left.end() : right.start()].isspace()
+                for left, right in zip(group, group[1:], strict=False)
+            ):
+                continue
+            digest = hashlib.sha256(
+                "".join(part.group() for part in group).casefold().encode("utf-8")
+            ).hexdigest()
+            if digest in fingerprints:
+                return True
+    return False
+
 
 IPV4_PATTERN = re.compile(r"(?<![\d.])(?:\d{1,3}\.){3}\d{1,3}(?![\d.])")
 
@@ -146,6 +188,9 @@ def main() -> int:
         for label, pattern in SECRET_PATTERNS:
             if pattern.search(text):
                 findings.append(f"{rel}: possible {label}")
+
+        if contains_private_project_label(text):
+            findings.append(f"{rel}: private deployment label in public source")
 
         for raw_ip in IPV4_PATTERN.findall(text):
             if is_private_or_sensitive_ip(raw_ip):

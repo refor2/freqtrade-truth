@@ -46,7 +46,12 @@ class FinancialFieldComparison:
 
 @dataclass(frozen=True, slots=True)
 class ReconciliationGroupResult:
-    """Deterministic result for one comparable-record group."""
+    """Numeric-only comparison; never verified trade/account financial ownership.
+
+    The legacy status enum describes arithmetic only. The explicit financial
+    truth properties below are stable fail-closed preview semantics.
+    No source-independent ownership proof is accepted by this function.
+    """
 
     instrument: str
     settlement_currency: str
@@ -55,6 +60,26 @@ class ReconciliationGroupResult:
     freqtrade_record_ids: tuple[str, ...]
     exchange_record_ids: tuple[str, ...]
     comparisons: tuple[FinancialFieldComparison, ...]
+
+    @property
+    def numeric_status(self) -> ReconciliationStatus:
+        """Alias: the legacy status is numerical, not proof of economic identity."""
+        return self.status
+
+    @property
+    def identity_status(self) -> str:
+        """The generic group has no authoritative cross-source identity evidence."""
+        return "unverified"
+
+    @property
+    def financial_truth_status(self) -> str:
+        """No numeric group, including MATCH, can verify account financial truth."""
+        return "unverified"
+
+    @property
+    def verified_financial_match(self) -> bool:
+        """Always false absent source-proven complete owner evidence."""
+        return False
 
 
 _FIELD_ORDER = (

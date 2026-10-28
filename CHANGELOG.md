@@ -2,6 +2,77 @@
 
 All notable public changes to Freqtrade Truth are documented here.
 
+## Unreleased — 0.0.7 exact bill query-window evidence (tag pending)
+
+- Detect independently whether a sanitized OKX source bill query covers the
+  actual associated fill timestamps. Out-of-window fill-without-bill
+  is a **source-window gap**, not proof that the exchange lacks that bill.
+- Distinguish missing before/inside/after query window using exact Unix ms;
+  fail-closed on inconsistent source identity, repeated fill keys, or foreign bills.
+- Redacted CLI `bill_query_window_coverage` counts only, without trade or bill IDs.
+- Source-window gaps are covered by synthetic validation; no private-account aggregates are published.
+- No integration with trading engines or private deployments; v0.1
+  event-time FX and strict lifecycle remain unresolved gates.
+
+## Unreleased — 0.0.6 OKX funding candidate integrity (tag pending)
+
+- Added source-native **funding candidate** batch checks on existing
+  authenticated GET-only evidence, reusing the strict cycle identity API.
+- Validate funding bill type 8, subtypes 173/174, signed values,
+  instrument/currency, event time and stable unique bill identifiers.
+- Deduplicate recurring account bills across per-trade queries and flag
+  conflicting bill content or overlapping candidate position cycles.
+- Keep ownership, full account coverage and historical USD validation
+  explicitly **false** even for mathematically consistent candidates.
+- Funding candidate acceptance is covered by synthetic fixtures; account metrics are not published.
+- Public synthetic regressions and reporting do not modify exchange
+  accounts, strategies, engines, credentials or private deployments.
+- Historical USD settlement and account-level bill ownership remain
+  blocked by missing authoritative evidence (issue #15).
+
+## Unreleased — 0.0.5 independent OKX fee evidence gates (tag pending)
+
+- Reuse strict position-cycle/linked-order identity and Decimal arithmetic:
+  independently compare complete OKX fill fees to position-history fee.
+- Keep the separate ledger completeness gate fail-closed; every fill requires
+  a unique matching bill ID, exact order ID, trade ID, native currency and
+  fee. Incomplete, ambiguous and conflicting ownership are never MATCH.
+- Batch anti-duplication across trade claims for both position cycles and
+  bill IDs; no fee/ledger values or identifiers leak from the CLI report.
+- Fee reconciliation is validated in synthetic fixtures; no private trade aggregates are released.
+- Synthetic negative fixtures, package and CI coverage added; no external
+  trading deployment changes. v0.1 identity and USD gates remain open.
+
+## Unreleased — 0.0.4 OKX source-native cycle verification (tag pending)
+
+- Reuse the existing strict OKX sanitized GET-only account evidence shape and the
+  previously audited `audit_native_record()` native money equation.
+- New deterministic library verifier covers strong Freqtrade order IDs, conditional
+  stoploss child IDs, strict OKX fill membership and unique non-overlapping
+  cTime/uTime position cycles, source truncation and missing amounts.
+- `PositionNativeStatus` clearly separates consistent/different/unknown/conflict;
+  repeated `posId` on separate cycles is allowed, two claims on the *same*
+  complete cycle are rejected.
+- Local `okx-native-report` CLI consumes sanitized snapshots and emits **counts
+  only**, never IDs/amounts, without external account access or writes.
+- Source-native cycle verification is deterministic and tested with synthetic fixtures.
+- Additional synthetic negative tests, exact-package/CI verification, docs.
+- Still **no independent USD settlement FX or 4/4 strict cycle identity**;
+  a signed account reader is required for source trust. Not v0.1 Financial Truth.
+
+## Unreleased — 0.0.3 read-only candidate reporting (tag pending)
+
+- Reuse the existing deterministic grouping and numerical comparison core with
+  standalone redacted JSON, CSV and static HTML reports.
+- Add bounded local normalized snapshot input, offline CLI reporting and an
+  optional loopback-only GET HTTP view (no POST, JS, credentials or trading).
+- Explicitly expose numeric results as *candidates*, always unverified for
+  cross-system trade identity and account financial truth.
+- Add full synthetic match/review/incomplete, unsafe input, redaction and HTTP
+  regression tests. Includes synthetic OKX XPERP native USDC coverage.
+- **Not** a stable financial reconciliation v0.1 release: the verified ownership,
+  field attribution and event-time USD valuation gates remain open in issue #15.
+
 ## Unreleased — 0.0.2 pre-alpha release candidate (tag pending)
 
 The 0.0.2 code integrates the independent Bybit/Freqtrade evidence drafts and

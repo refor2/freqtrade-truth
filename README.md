@@ -17,6 +17,127 @@ See [OKX first-run instructions](docs/okx-quickstart.md) and
 [OKX source-adapter limits](docs/okx-adapter.md). **Position-history numeric
 values do not prove trade ownership or account-wide financial correctness.**
 
+## Read-only funding candidate reconciliation (0.0.6 candidate)
+
+`freqtrade-truth okx-native-report` now includes a separate
+`funding_candidate_states` count. It compares account funding bill **candidates**
+with native position-history funding; it validates exact instrument, currency,
+bill ID, event time, subtypes 173/174, signed values and cross-cycle conflicts.
+Repeat occurrences of one immutable bill ID are not double counted.
+
+The result `candidate_sum_equal` is **not** verified bill ownership. The
+report always preserves `funding_ownership_verified=false`,
+`funding_ledger_coverage_verified=false` and `usd_verified=false`. A missing
+source event never becomes zero. Existing source-native and fee checks remain
+independent.
+
+Example: `freqtrade-truth okx-native-report --input examples/okx-fee-evidence.synthetic.json`
+
+The funding candidate checks are exercised with public synthetic examples. Financial Truth v0.1 remains open.
+
+## OKX fee-component evidence (0.0.5 candidate)
+
+Read-only `okx-native-report` now distinguishes two separate financial claims:
+
+- `fee_fill_position_states`: exact source-native sum of signed fees from
+  every confirmed OKX fill versus signed fee in the uniquely identified
+  position-history row. This does **not** require each accounting bill.
+- `fee_ledger_states`: **additional** exact fill-to-bill ledger coverage,
+  requiring every fill to have one uniquely identified same-currency bill.
+  Missing bills remain `incomplete` even if fill fees match position fees.
+
+Both checks reuse the existing strict position-cycle verifier. They do not
+guess an account owner, fill the gap with zero, infer funding by time, or
+convert USDC to USD. Reports are redacted aggregates only.
+
+Try the included synthetic mixed-evidence sample:
+
+```sh
+freqtrade-truth okx-native-report --input examples/okx-fee-evidence.synthetic.json
+```
+
+Synthetic fee-ledger verification demonstrates that incomplete bills and unidentified cycles remain unknown. See [fee verification scope](docs/okx-native-verification.md).
+
+## Read-only OKX native-source verification (0.0.4 candidate)
+
+The installed CLI can now verify source-native OKX position-cycle arithmetic on
+local **sanitized GET-only evidence** while preserving rejected ambiguity.
+This adds NO trading engine, live integration, 1-second fuzzy matching or USD
+conversion:
+
+```bash
+freqtrade-truth okx-native-report --input examples/okx-native.synthetic.json
+```
+
+Expected synthetic counts: 2 consistent, 1 different, 1 unknown. The output
+never exposes private IDs, fills or amounts, and explicitly marks account/FX
+verification as false. See [proof and limitations](docs/okx-native-verification.md).
+
+## Ready-to-use offline reports (0.0.3 candidate)
+
+The local report interface is operational, read-only and uses the existing
+normalization/reconciliation core. It accepts normalized data (not raw exchange
+credentials), and emits **redacted by default** JSON, CSV or static HTML.
+There is also a **localhost-only GET report API**:
+
+```bash
+freqtrade-truth report --input examples/candidate-report.synthetic.json --format json
+freqtrade-truth report --input examples/candidate-report.synthetic.json --format csv
+freqtrade-truth report --input examples/candidate-report.synthetic.json --format html > report.html
+freqtrade-truth serve --input examples/candidate-report.synthetic.json --port 8767
+```
+
+This is a functioning numerical comparison/report library, **not** a finished
+authoritative financial truth engine: the explicit `numeric_status=match`
+is **not an identity-verified match**. All reports expose
+`verified_trade_identity=false`. See [reporting usage and schema](docs/candidate-reporting.md)
+and [identity review issue #15](https://github.com/refor2/freqtrade-truth/issues/15).
+
+## Connect an independent Freqtrade bot (source preview)
+
+The public package has a standalone `freqtrade-check` command that contacts
+an operator-supplied Freqtrade REST endpoint using GET only. For HTTP, it
+accepts literal loopback origins only; remote installations require HTTPS.
+Optional Basic credentials come from private environment variables
+`FREQTRADE_READ_USERNAME` and `FREQTRADE_READ_PASSWORD`.
+
+```sh
+freqtrade-truth freqtrade-check --url http://127.0.0.1:8080 --hours 24 --limit 50 --json
+```
+
+It returns only redacted source counts. It does **not** claim complete
+history, exchange trade ownership or verified PnL. No private UI, trading
+engine changes or proprietary strategy code is required. See the
+[standalone first-run walkthrough](docs/first-run.md).
+
+## Independent two-source Bybit inverse numeric comparison
+
+A standalone Freqtrade operator can now compare a bounded recent Freqtrade
+closed-trade window to Bybit inverse closed-PnL, using private read-only Bybit
+API credentials and optionally Freqtrade Basic Auth credentials held only in
+their own local environment (never in public GitHub or shell arguments):
+
+```sh
+freqtrade-truth reconcile-bybit --freqtrade-url http://127.0.0.1:8080 \
+  --symbol BTCUSD --base BTC --quote USD --settle BTC --hours 24 --json
+# Optional: additionally compare exact positive-filled order references
+freqtrade-truth reconcile-bybit --freqtrade-url http://127.0.0.1:8080 \
+  --symbol BTCUSD --base BTC --quote USD --settle BTC --check-order-links --json
+# Optional: include bounded Bybit execution/transaction-ledger corroboration
+freqtrade-truth reconcile-bybit --freqtrade-url http://127.0.0.1:8080 \
+  --symbol BTCUSD --base BTC --quote USD --settle BTC \
+  --check-order-links --check-execution-ledger --json
+```
+
+The command validates Bybit's read-only API-key permission, verifies public
+inverse product metadata, reads both sources via GET only, and emits
+redacted *candidate numeric agreement, mismatch and unknown counts*.
+Partial result limits fail closed rather than producing an incomplete match.
+**It is not a verified economic trade ownership or accounting/PnL report.**
+Bybit closed-PnL rows and Freqtrade trades can represent different lifecycle
+units, funding remains unassigned, and observed numerical equality is
+not ownership proof. See [standalone runbook](docs/standalone-bybit-candidate.md).
+
 ## Try it in one minute — entirely offline
 
 ```bash
@@ -176,3 +297,18 @@ MIT. See [LICENSE](LICENSE).
 ## Project relationship
 
 Freqtrade Truth is an independent community project and is not affiliated with or endorsed by the Freqtrade project or any exchange.
+
+
+### Bill source coverage diagnosis (0.0.7)
+
+`okx-native-report` also contains `bill_query_window_coverage`.
+A missing fill-to-bill link is **not evidence that the bill does not exist**
+when the original `trade_window` excluded the fill. The new result
+counts missing-before, missing-inside, and missing-after window separately.
+It never asserts complete ledger coverage, even when timestamps fall inside.
+
+A complete bill window may differ from the operational trade window.
+An upstream **read-only OKX adapter** should explicitly report the fetched
+`bill_query_window`, separately from its `trade_window`.
+This report uses `bill_query_window` when present and retains the older field
+only for backwards-compatible source snapshots.

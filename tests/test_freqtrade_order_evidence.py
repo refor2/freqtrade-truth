@@ -183,12 +183,8 @@ def _financial_record(
     )
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="#15: preview time-only numeric MATCH is not verified cross-source ownership",
-)
 def test_unrelated_same_time_order_must_not_be_finally_verified() -> None:
-    """Known preview limitation; will become an ordinary test when #15 is implemented."""
+    """Numeric equality remains visible, but cannot verify economic ownership."""
 
     bot = _financial_record(SourceKind.FREQTRADE, "freqtrade:42", "42")
     exchange = _financial_record(SourceKind.EXCHANGE, "bybit:EX-FOREIGN", "EX-FOREIGN")
@@ -203,7 +199,10 @@ def test_unrelated_same_time_order_must_not_be_finally_verified() -> None:
         tolerance=ReconciliationTolerance(),
         fields=(FinancialField.REPORTED_NET_PNL,),
     )
-    assert result.status is not ReconciliationStatus.MATCH
+    assert result.numeric_status is ReconciliationStatus.MATCH
+    assert result.identity_status == "unverified"
+    assert result.financial_truth_status == "unverified"
+    assert result.verified_financial_match is False
 
 
 def test_source_records_remain_immutable() -> None:
