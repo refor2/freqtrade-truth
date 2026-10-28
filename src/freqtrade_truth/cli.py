@@ -412,7 +412,7 @@ def main(
                 return result
 
             snapshot = json.loads(raw.decode("utf-8"), object_pairs_hook=unique_members)
-            result = audit_settlement_ledger(snapshot, tolerance=tolerance)
+            result: dict[str, object] = dict(audit_settlement_ledger(snapshot, tolerance=tolerance))
         except (OSError, ValueError, UnicodeError, InvalidOperation):
             print("ERROR: invalid or incomplete local settlement evidence", file=err)
             return 2

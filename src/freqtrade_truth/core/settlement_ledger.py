@@ -11,7 +11,7 @@ import re
 from collections import Counter
 from datetime import UTC, datetime
 from decimal import Decimal, localcontext
-from typing import Any
+from typing import Any, TypedDict
 
 _SCHEMA = "freqtrade-truth.settlement-ledger.v1"
 _COMPONENTS = (
@@ -29,6 +29,26 @@ _EVENT_TO_COMPONENT = {
 _KINDS = frozenset(_EVENT_TO_COMPONENT)
 _MONEY_PATTERN = re.compile(r"-?(?:0|[1-9][0-9]{0,80})(?:\.[0-9]{1,32})?\Z")
 _MAX_EVENTS = 1000
+
+
+class SettlementAuditReport(TypedDict):
+    schema: str
+    scope: str
+    numeric_status: str
+    reasons: list[str]
+    event_count: int
+    event_kind_counts: dict[str, int]
+    settlement_currency: str
+    native_components: dict[str, str | None]
+    computed_native_net: str | None
+    exchange_minus_bot: str | None
+    computed_minus_exchange: str | None
+    account_verified: bool
+    verified_trade_identity: bool
+    ledger_coverage_independently_verified: bool
+    verified_financial_truth: bool
+    usd_verified: bool
+    warning: str
 
 
 def _object(raw: object, names: set[str], kind: str) -> dict[str, Any]:
@@ -81,7 +101,7 @@ def _difference_exact(left: Decimal, right: Decimal) -> Decimal:
         return left - right
 
 
-def audit_settlement_ledger(snapshot: object, *, tolerance: Decimal) -> dict[str, object]:
+def audit_settlement_ledger(snapshot: object, *, tolerance: Decimal) -> SettlementAuditReport:
     """Compare exact-position event components with reported exchange and bot net.
 
     Complete category flags are *claims* in the input and not independently
