@@ -6,7 +6,7 @@ not a complete Freqtrade-to-exchange trade-identity audit.
 
 ## 1. Install from the public source repository
 
-Requires Python 3.11–3.14. No private BOT OPS UI components:
+Requires Python 3.11–3.14. No private private operator application components:
 
 ```bash
 git clone https://github.com/refor2/freqtrade-truth.git
@@ -88,8 +88,7 @@ execution, position and funding/fee ledger data with explicit source and
 account provenance; that v0.1 contract is still being developed under
 [issue #15](https://github.com/refor2/freqtrade-truth/issues/15).
 
-The private BOT OPS UI bridge is a separate opt-in SHADOW-only integration.
-Nothing here enables or changes BOT2/V891 execution.
+No proprietary deployment bridges are included. This package does not control external trading engines.
 
 ## Source references
 

@@ -92,17 +92,14 @@ IP restrictions. The authenticated source endpoint is not accessible from
 every location. A 2026-10-21 public `/api/v5/public/instruments` smoke request
 from the project's development NUC returned HTTP 403, so **no successful
 live OKX account-read claim is made**.
-The private MyOKX reader remains outside public OSS.
+The package does not ship account-specific private adapters.
 
-### Integration with private BOT OPS UI
+### Integration boundary
 
-The existing private `Bot2FinancialReconciliationService` stays the
-**authoritative** source for MyOKX financial truth. The public position
-history adapter is source-level numeric input only and must not replace the
-strong private order/fill/position/bills identity checks, particularly OKX
-stoploss `algoId` -> triggered `ordId` links and USDC-native valuation
-unknowns. Any future bridge must be private, version pinned, read-only,
-synthetically parity tested and first run in SHADOW mode.
+Operators must verify provenance, source permissions and exact
+position/order/fill/bill ownership independently. This source
+adapter cannot certify financial settlement, control trading, or substitute
+for a proven account-native reconciler.
 
 ## Official references
 
