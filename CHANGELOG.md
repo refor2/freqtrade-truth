@@ -4,6 +4,9 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ## Unreleased — 0.0.7 exact bill query-window evidence (tag pending)
 
+- Fixed incomplete source distribution: include read-only safety/verification
+  scripts, synthetic test fixtures and optional local Git hooks. The source
+  integrity gate now rejects any archive missing required test dependencies.
 - Extended secret detectors to GitHub fine-grained PATs, bare exchange/API
   credential assignments and common CSV/JSONL/shell/SQL files; scanner
   findings no longer echo the actual private IP address. Tests use only

@@ -122,10 +122,17 @@ def _sdist_findings(sdist: Path, version: str) -> list[str]:
             root_prefix + "docs/candidate-reporting.md",
             root_prefix + "examples/okx-native.synthetic.json",
             root_prefix + "docs/okx-native-verification.md",
+            root_prefix + "scripts/public_safety_check.py",
+            root_prefix + "scripts/prepublication_guard.py",
+            root_prefix + "scripts/commit_metadata_check.py",
+            root_prefix + "scripts/release_integrity_check.py",
+            root_prefix + "tests/fixtures/normalized_trades.json",
+            root_prefix + ".githooks/pre-commit",
+            root_prefix + ".githooks/pre-push",
         }
         missing = required_examples - {member.name for member in members}
         for item in sorted(missing):
-            findings.append(f"{sdist.name}: missing installable example/doc: {item}")
+            findings.append(f"{sdist.name}: missing required source archive asset: {item}")
         for member in members:
             unsafe = _unsafe_archive_member(member.name)
             if unsafe:

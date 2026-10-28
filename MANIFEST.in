@@ -1,3 +1,6 @@
 include README.md LICENSE SECURITY.md CHANGELOG.md RELEASING.md
 recursive-include docs *.md
 recursive-include examples *.json
+recursive-include scripts *.py
+recursive-include tests/fixtures *.json
+include .githooks/pre-commit .githooks/pre-push

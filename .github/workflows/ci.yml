@@ -81,6 +81,14 @@ jobs:
       - name: Release integrity
         run: python scripts/release_integrity_check.py
 
+      - name: Verify extracted source distribution can run its own tests
+        run: |
+          mkdir -p "$RUNNER_TEMP/freqtrade-truth-source-check"
+          tar -xzf dist/freqtrade_truth-*.tar.gz -C "$RUNNER_TEMP/freqtrade-truth-source-check"
+          cd "$RUNNER_TEMP"/freqtrade-truth-source-check/freqtrade_truth-*
+          python -m pip install -e ".[dev]"
+          python -m pytest -q
+
       - name: Install built wheel
         run: python -m pip install --force-reinstall dist/*.whl
 

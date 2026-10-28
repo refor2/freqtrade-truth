@@ -125,3 +125,11 @@ The public source scanner also recognizes GitHub fine-grained token shapes and
 unquoted credential assignments; additional plaintext formats such as CSV and
 JSONL are covered. False negatives remain possible. Before every release,
 review exact staged content and **all outgoing commits** locally.
+
+### Release archive completeness
+
+In addition to installing the wheel in a clean environment, validate that the
+source distribution contains its safety scripts, synthetic test fixtures and
+optional Git hooks. Extract the sdist in isolation, install the package and
+run its complete synthetic test suite. Do not store or inject account keys in
+release builds or CI; independent account acceptance is a separate private task.
