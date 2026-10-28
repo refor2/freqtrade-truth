@@ -6,6 +6,14 @@ Its goal is simple: make it easier to verify whether bot-side trade results matc
 
 > Status: **pre-alpha preview**. Freqtrade and the first Bybit inverse read paths are implemented and test-covered. Deterministic grouping and normalized field comparison are implemented; exchange-ledger enrichment and reporting are still incomplete. Reconciliation status names, reason codes, attribution rules, and reporting contracts remain provisional until the [v0.1 contract-stabilization gate](https://github.com/refor2/freqtrade-truth/issues/15) is complete. Do not use this preview as the sole source for accounting or trading decisions.
 
+## Live Freqtrade / OKX two-source candidate audit (read-only)
+
+Use `freqtrade-truth reconcile-okx` to read closed trades and native OKX
+position history independently, then compare reported net PnL under strict
+instrument, currency and time-window constraints. No account or ownership
+verification is claimed; source values and identifiers are redacted. See
+[the complete CLI and safety guide](docs/okx-two-source-candidate.md).
+
 ## Read recent OKX history (read-only, EEA supported)
 
 After installing the package, a Freqtrade operator can run `okx-check`

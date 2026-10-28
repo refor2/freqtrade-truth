@@ -84,6 +84,7 @@ def test_cli_exposes_only_reviewed_read_only_commands() -> None:
         "bybit-check",
         "freqtrade-check",
         "reconcile-bybit",
+        "reconcile-okx",
         "okx-check",
         "demo",
         "report",

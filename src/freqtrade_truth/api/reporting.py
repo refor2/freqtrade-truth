@@ -9,7 +9,7 @@ from html import escape
 from io import StringIO
 
 from freqtrade_truth.core.comparison import reconcile_group
-from freqtrade_truth.core.models import NormalizedTradeRecord
+from freqtrade_truth.core.models import FinancialField, NormalizedTradeRecord
 from freqtrade_truth.core.reconciliation import ReconciliationTolerance, group_comparable_records
 
 
@@ -19,12 +19,13 @@ def build_report(
     *,
     tolerance: ReconciliationTolerance,
     include_values: bool = False,
+    fields: Sequence[FinancialField] | None = None,
 ) -> dict[str, object]:
     """Never promote numeric equality to verified ownership or USD parity."""
     grouped = group_comparable_records(freqtrade, exchange, tolerance=tolerance)
     rows: list[dict[str, object]] = []
     for index, group in enumerate(grouped, 1):
-        result = reconcile_group(group, tolerance=tolerance)
+        result = reconcile_group(group, tolerance=tolerance, fields=fields)
         item: dict[str, object] = {
             "index": index,
             "numeric_status": result.numeric_status.value,

@@ -4,6 +4,15 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ## Unreleased — 0.0.7 exact bill query-window evidence (tag pending)
 
+- Add independent live `reconcile-okx` GET-only candidate CLI, composing
+  bounded Freqtrade and OKX positions-history adapters. Numeric reported net
+  comparisons require explicit instrument, currency and time tolerances.
+  Native-source accounting discrepancies, pagination exhaustion and missing
+  data fail closed. No real-account PnL ownership or historic FX proof is made.
+- Add explicit financial-field selection to the existing report builder so
+  a known net-PnL comparison cannot be masked by absent bot-side price/fee
+  decomposition; retain original full-field default for existing callers.
+
 - Fix OKX GET client identification on read-only public metadata preflight and
   authenticated positions-history reads. Uses a stable, non-impersonating
   User-Agent; adds synthetic header regression coverage. Authentication and

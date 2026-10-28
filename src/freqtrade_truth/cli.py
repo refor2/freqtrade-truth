@@ -308,6 +308,25 @@ def build_parser() -> argparse.ArgumentParser:
         help="Explicitly expose potentially private source-window amount totals on stdout.",
     )
 
+    reconcile_okx = subparsers.add_parser(
+        "reconcile-okx",
+        help="Bounded, redacted Freqtrade/OKX read-only numeric candidate audit.",
+    )
+    reconcile_okx.add_argument("--freqtrade-url", default="http://127.0.0.1:8080")
+    reconcile_okx.add_argument("--region", required=True, choices=("eea", "global", "us"))
+    reconcile_okx.add_argument("--inst-id", required=True)
+    reconcile_okx.add_argument("--inst-type", required=True, choices=("SWAP", "FUTURES"))
+    reconcile_okx.add_argument("--settle", required=True)
+    reconcile_okx.add_argument("--pair", required=True)
+    reconcile_okx.add_argument("--source-amount-ccy", default=None)
+    reconcile_okx.add_argument("--isolated-xperp", action="store_true")
+    reconcile_okx.add_argument("--hours", type=int, default=24)
+    reconcile_okx.add_argument("--limit", type=int, default=50)
+    reconcile_okx.add_argument("--max-pages", type=int, default=20)
+    reconcile_okx.add_argument("--close-seconds", type=int, default=60)
+    reconcile_okx.add_argument("--net-tolerance", default="0.00000001")
+    reconcile_okx.add_argument("--json", action="store_true", dest="json_output")
+
     report = subparsers.add_parser(
         "report", help="Offline candidate-only JSON/CSV/HTML report from local normalized data."
     )
@@ -426,6 +445,43 @@ def main(
         else:
             result["amounts_redacted"] = False
         print(json.dumps(result, sort_keys=True), file=out)
+        return 0
+
+    if args.command == "reconcile-okx":
+        from decimal import Decimal
+
+        from freqtrade_truth.okx_candidate import OkxCandidateConfig, compare_okx_candidate
+
+        try:
+            okx_candidate_config = OkxCandidateConfig(
+                freqtrade_url=args.freqtrade_url,
+                region=args.region,
+                inst_id=args.inst_id,
+                inst_type=args.inst_type,
+                settle=args.settle,
+                pair=args.pair,
+                source_amount_ccy=args.source_amount_ccy,
+                isolated_xperp=args.isolated_xperp,
+                hours=args.hours,
+                limit=args.limit,
+                max_pages=args.max_pages,
+                close_seconds=args.close_seconds,
+                net_tolerance=Decimal(args.net_tolerance),
+            )
+            summary = asyncio.run(compare_okx_candidate(okx_candidate_config, environ=env))
+        except Exception:  # No exception text: secrets, private instrument IDs or payloads
+            print("ERROR: independent read-only OKX candidate audit failed", file=err)
+            return 2
+        if args.json_output:
+            print(json.dumps(summary, sort_keys=True), file=out)
+        else:
+            print(
+                f"Numeric candidates: {summary['candidate_numeric_equal']} equal, "
+                f"{summary['candidate_numeric_different']} different, "
+                f"{summary['unverified_or_ambiguous_groups']} incomplete/ambiguous",
+                file=out,
+            )
+            print("Account ownership and actual financial truth: NOT VERIFIED", file=out)
         return 0
 
     if args.command == "reconcile-bybit":
