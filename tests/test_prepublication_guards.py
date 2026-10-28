@@ -118,3 +118,14 @@ def test_pre_push_rejects_malformed_ref_input(tmp_path: Path) -> None:
     outcome = run_guard(root, "--pre-push", stdin="malformed\n")
     assert outcome.returncode != 0
     assert "BLOCKED" in outcome.stdout
+
+
+def test_staged_guard_rejects_bare_exchange_secret_even_in_csv(tmp_path: Path) -> None:
+    root = repo(tmp_path / "bare-secret")
+    payload = "BYBIT_" + "API_KEY=" + "synthetic-unquoted-access-string-000000000000"
+    (root / "settings.csv").write_text(payload)
+    git(root, "add", "settings.csv")
+    outcome = run_guard(root, "--staged")
+    assert outcome.returncode != 0
+    assert "possible unquoted secret assignment" in outcome.stdout
+    assert "synthetic-unquoted-access-string" not in outcome.stdout

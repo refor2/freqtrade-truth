@@ -4,6 +4,10 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ## Unreleased — 0.0.7 exact bill query-window evidence (tag pending)
 
+- Extended secret detectors to GitHub fine-grained PATs, bare exchange/API
+  credential assignments and common CSV/JSONL/shell/SQL files; scanner
+  findings no longer echo the actual private IP address. Tests use only
+  synthetic assembled values and do not contain real credentials.
 - Added opt-in local pre-commit/pre-push publication guard that scans exact
   staged Git blobs and every outgoing commit, rejecting secret-like assignments,
   prohibited files, unscannable binaries and private infrastructure before a

@@ -14,6 +14,21 @@ SECRET_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("private key", re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH |DSA )?PRIVATE KEY-----")),
     ("OpenAI-style secret", re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b")),
     ("GitHub token", re.compile(r"\bgh[pousr]_[A-Za-z0-9]{20,}\b")),
+    ("GitHub fine-grained token", re.compile(r"\bgithub_pat_[A-Za-z0-9_]{20,}\b")),
+    (
+        "unquoted secret assignment",
+        re.compile(
+            r"""(?imx)
+            ^[ \t]*(?:export[ \t]+)?
+            (?:[A-Z][A-Z0-9]*_){0,4}
+            (?:API[_-]?KEY|API[_-]?SECRET|SECRET[_-]?KEY|PASSWORD|PASS(?:PHRASE)?|ACCESS[_-]?TOKEN|AUTH[_-]?TOKEN)
+            [ \t]*[:=][ \t]*
+            (?!["']?(?:<|\$\{|example\b|placeholder\b|redacted\b|changeme\b|dummy\b|test\b))
+            ["']?[A-Za-z0-9_+\-/=.:]{16,}["']?
+            [ \t]*(?:[;#].*)?$
+            """
+        ),
+    ),
     ("AWS access key", re.compile(r"\bAKIA[0-9A-Z]{16}\b")),
     (
         "URL-embedded credentials",
@@ -103,18 +118,29 @@ PROHIBITED_SUFFIXES = {
 
 TEXT_SUFFIX_ALLOWLIST = {
     "",
+    ".bash",
     ".cfg",
+    ".csv",
     ".css",
     ".env",
     ".example",
     ".html",
     ".ini",
     ".js",
+    ".ipynb",
     ".json",
+    ".jsonl",
     ".md",
+    ".properties",
     ".py",
+    ".pyi",
+    ".sh",
+    ".sql",
     ".toml",
+    ".tf",
+    ".tsv",
     ".txt",
+    ".xml",
     ".yaml",
     ".yml",
 }
@@ -194,7 +220,7 @@ def main() -> int:
 
         for raw_ip in IPV4_PATTERN.findall(text):
             if is_private_or_sensitive_ip(raw_ip):
-                findings.append(f"{rel}: private/sensitive IP address {raw_ip}")
+                findings.append(f"{rel}: private/sensitive IP address")
 
     if findings:
         print("PUBLIC SAFETY CHECK FAILED")

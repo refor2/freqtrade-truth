@@ -120,3 +120,8 @@ secret scanning and push protection via repository Settings when available.
 Never upload exchange API keys to GitHub Actions Secrets, even as test-only
 credentials. Read-only account tests must run on a privately controlled host;
 no private fixture or environment file is to be copied to this repository.
+
+The public source scanner also recognizes GitHub fine-grained token shapes and
+unquoted credential assignments; additional plaintext formats such as CSV and
+JSONL are covered. False negatives remain possible. Before every release,
+review exact staged content and **all outgoing commits** locally.
