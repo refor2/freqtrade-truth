@@ -4,6 +4,10 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ## Unreleased — 0.0.7 exact bill query-window evidence (tag pending)
 
+- Reject out-of-window Bybit inverse closed-PnL and account transaction-log
+  rows for each requested chunk instead of silently dropping them while
+  reporting pagination completion. Synthetic source and integration regressions
+  cover both sides; this is not complete historical-account validation.
 - Harden the independently runnable Bybit GET-only candidate mode: enforce
   exact private-request parameter allowlists, finite millisecond windows,
   bounded page size and source identity fields before any authenticated I/O.

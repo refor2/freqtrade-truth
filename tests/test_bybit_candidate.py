@@ -15,6 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import pytest
 
 from freqtrade_truth.adapters.bybit_market import BybitInverseMarketInfo
+from freqtrade_truth.adapters.bybit_transaction_log import BybitTransactionLogError
 from freqtrade_truth.adapters.freqtrade_order_evidence import FreqtradeOrderEvidenceError
 from freqtrade_truth.adapters.http import JsonObject, StdlibJsonTransport
 from freqtrade_truth.bybit_candidate import BybitCandidateConfig, compare_bybit_inverse
@@ -844,3 +845,33 @@ def test_mutation_endpoint_is_not_in_authenticated_bybit_allowlist() -> None:
     assert _validate_api_path("v5/execution/list") == "v5/execution/list"
     with pytest.raises(ValueError, match="allowlisted"):
         _validate_api_path("v5/order/create")
+
+
+class OutOfWindowLedgerBybit(ThreeSourceBybit):
+    async def get_json(
+        self, path: str, params: Mapping[str, str | int | bool] | None = None
+    ) -> JsonObject:
+        result = await super().get_json(path, params)
+        if path == "v5/account/transaction-log":
+            payload = result["result"]
+            assert isinstance(payload, dict)
+            entries = payload["list"]
+            assert isinstance(entries, list) and entries
+            entry = entries[0]
+            assert isinstance(entry, dict)
+            entry["transactionTime"] = "1"  # valid Unix milliseconds, wrong source window
+        return result
+
+
+def test_three_source_out_of_window_ledger_fails_whole_command_without_report(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "freqtrade_truth.bybit_candidate.verify_bybit_inverse_perpetual", _verified_market
+    )
+    with pytest.raises(BybitTransactionLogError, match="outside requested window"):
+        _run(
+            _config(check_order_refs=True, check_execution_ledger=True),
+            DetailFreqtradeSource(),
+            OutOfWindowLedgerBybit(),
+        )

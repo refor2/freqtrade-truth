@@ -166,13 +166,19 @@ class BybitInverseTransactionLogReader:
                         )
                     if record.instrument is not None and record.instrument != self._symbol:
                         continue
+                    # A target-source event outside the exact requested chunk
+                    # makes the source window untrustworthy. Filtering it out
+                    # would falsely advertise complete cursor coverage.
+                    event_ms = _to_milliseconds(record.occurred_at)
+                    if not window_start <= event_ms <= window_end:
+                        raise BybitTransactionLogError(
+                            "Bybit transaction event outside requested window"
+                        )
                     if (
                         record.instrument is not None
                         and self._normalized_instrument != self._symbol
                     ):
                         record = replace(record, instrument=self._normalized_instrument)
-                    if record.occurred_at < query.start_at or record.occurred_at > query.end_at:
-                        continue
                     if record.record_id in seen_record_ids:
                         raise BybitTransactionLogError(
                             "Bybit returned a duplicate transaction-log record"

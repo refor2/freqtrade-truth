@@ -312,3 +312,7 @@ An upstream **read-only OKX adapter** should explicitly report the fetched
 `bill_query_window`, separately from its `trade_window`.
 This report uses `bill_query_window` when present and retains the older field
 only for backwards-compatible source snapshots.
+
+Read-only operators can follow the [independent acceptance checklist](docs/independent-readonly-acceptance.md)
+to distinguish source availability from financial account verification. No real
+account data or credentials should be sent to this repository.

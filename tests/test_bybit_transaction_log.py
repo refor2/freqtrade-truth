@@ -503,3 +503,35 @@ def test_empty_result_is_page_exhaustion_not_proven_economic_ownership() -> None
     assert snapshot.records == ()
     assert not hasattr(snapshot, "account_ownership_verified")
     assert not hasattr(snapshot, "funding_attributed")
+
+
+@pytest.mark.parametrize("hours_offset", (-1, 25))
+def test_out_of_window_target_ledger_event_fails_closed_even_if_pagination_exhausts(
+    hours_offset: int,
+) -> None:
+    start = datetime(2030, 1, 1, tzinfo=UTC)
+    target = query(start_at=start, end_at=start + timedelta(days=1))
+    transport = RecordingTransport(
+        [
+            response(
+                [item(event_id="outside-window", occurred_at=start + timedelta(hours=hours_offset))]
+            )
+        ]
+    )
+    with pytest.raises(BybitTransactionLogError, match="outside requested window"):
+        asyncio.run(reader(transport).fetch_paginated_window_evidence(target))
+    assert len(transport.requests) == 1
+
+
+def test_ledger_event_in_global_window_but_outside_queried_chunk_is_not_accepted() -> None:
+    start = datetime(2030, 1, 1, tzinfo=UTC)
+    target = query(start_at=start, end_at=start + timedelta(days=8))
+    transport = RecordingTransport(
+        [
+            response([item(event_id="next-chunk-early", occurred_at=start + timedelta(days=7))]),
+            response([]),
+        ]
+    )
+    with pytest.raises(BybitTransactionLogError, match="outside requested window"):
+        asyncio.run(reader(transport).fetch_paginated_window_evidence(target))
+    assert len(transport.requests) == 1

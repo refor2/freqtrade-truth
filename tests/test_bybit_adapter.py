@@ -413,3 +413,47 @@ def test_explicit_trade_exec_type_preserves_net_independently_of_fees() -> None:
     assert records[0].trading_fees == Decimal("-0.00006")
     assert records[0].funding is None
     assert records[0].price_pnl is None
+
+
+@pytest.mark.parametrize("hours_offset", (-1, 25))
+def test_closed_pnl_response_outside_requested_source_window_fails_closed(
+    hours_offset: int,
+) -> None:
+    start = datetime(2030, 1, 1, tzinfo=UTC)
+    source = RecordingTransport(
+        [
+            response(
+                [
+                    closed_pnl_item(
+                        order_id="out-of-window", updated_at=start + timedelta(hours=hours_offset)
+                    )
+                ]
+            )
+        ]
+    )
+    with pytest.raises(BybitResponseError, match="outside requested window"):
+        asyncio.run(
+            adapter(source).fetch_closed_trades(
+                query(closed_from=start, closed_until=start + timedelta(days=1))
+            )
+        )
+    assert len(source.requests) == 1
+
+
+def test_closed_pnl_event_in_later_chunk_must_not_be_silently_accepted_in_earlier_chunk() -> None:
+    start = datetime(2030, 1, 1, tzinfo=UTC)
+    source = RecordingTransport(
+        [
+            response(
+                [closed_pnl_item(order_id="second-chunk", updated_at=start + timedelta(days=7))]
+            ),
+            response([]),
+        ]
+    )
+    with pytest.raises(BybitResponseError, match="outside requested window"):
+        asyncio.run(
+            adapter(source).fetch_closed_trades(
+                query(closed_from=start, closed_until=start + timedelta(days=8))
+            )
+        )
+    assert len(source.requests) == 1

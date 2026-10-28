@@ -25,9 +25,11 @@ freqtrade-truth reconcile-bybit --freqtrade-url http://127.0.0.1:8080 \
 The command performs signed GET-only Bybit API permission introspection before
 account queries. The public Bybit instrument metadata must agree with the
 explicit symbol, base, quote and settlement. Both sources are bounded.
-The Freqtrade source reads only `GET /api/v1/trades`, the Bybit private
-source reads only `GET /v5/user/query-api` and
-`GET /v5/position/closed-pnl`, and Bybit market metadata is public GET.
+The default Freqtrade source reads only `GET /api/v1/trades`. The default
+Bybit account source reads only `GET /v5/user/query-api` and
+`GET /v5/position/closed-pnl`; optional checks additionally use the
+Freqtrade trade-detail GET and Bybit execution/transaction-log GET endpoints
+specified below. Bybit market metadata is public GET.
 No POST, DELETE, PUT or order execution paths exist here.
 
 ## Optional stronger source order-reference review
@@ -115,3 +117,15 @@ numeric equality cannot establish the same economic position. This v0.1
 preview supports **Bybit inverse perpetual only**, not linear contracts.
 It is an informational source reconciliation, not an independent accounting
 statement, PnL certification or trading control.
+
+## Source-window rejection
+
+A target Bybit closed-PnL or transaction-log row outside the exact requested
+millisecond interval (including one of a series of seven-day API chunks) is a
+**source-consistency failure**, not a silently discarded record. The command
+fails closed, even if the API cursor says no pages remain. This prevents a
+false claim that the declared source query was completely traversed.
+
+This rule does *not* certify account retention, funding/fee ownership,
+position lifecycle or real financial Net PnL. See
+[read-only operator acceptance](independent-readonly-acceptance.md).
