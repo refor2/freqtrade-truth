@@ -333,6 +333,17 @@ def build_parser() -> argparse.ArgumentParser:
         default="0.00000001",
         help="Explicit source-native Decimal arithmetic tolerance.",
     )
+    settlement = subparsers.add_parser(
+        "settlement-audit",
+        help="Offline exact-position signed event ledger audit; account ownership UNVERIFIED.",
+    )
+    settlement.add_argument("--input", required=True, help="Local event evidence JSON file.")
+    settlement.add_argument("--tolerance", default="0.00000001")
+    settlement.add_argument(
+        "--include-values",
+        action="store_true",
+        help="Explicitly show native monetary values on stdout (private).",
+    )
     return parser
 
 
@@ -372,6 +383,50 @@ def main(
     out = stdout or sys.stdout
     err = stderr or sys.stderr
     env = environ if environ is not None else os.environ
+
+    if args.command == "settlement-audit":
+        from decimal import Decimal, InvalidOperation
+        from pathlib import Path
+
+        from freqtrade_truth.api.snapshot import MAX_BYTES
+        from freqtrade_truth.core.settlement_ledger import audit_settlement_ledger
+
+        try:
+            tolerance = Decimal(args.tolerance)
+            if not tolerance.is_finite() or tolerance < 0:
+                raise ValueError("invalid tolerance")
+            source = Path(args.input)
+            if source.is_symlink() or not source.is_file() or source.stat().st_size > MAX_BYTES:
+                raise ValueError("invalid source")
+            with source.open("rb") as handle:
+                raw = handle.read(MAX_BYTES + 1)
+            if len(raw) > MAX_BYTES:
+                raise ValueError("invalid source")
+
+            def unique_members(items: list[tuple[str, object]]) -> dict[str, object]:
+                result: dict[str, object] = {}
+                for key, value in items:
+                    if key in result:
+                        raise ValueError("duplicate property")
+                    result[key] = value
+                return result
+
+            snapshot = json.loads(raw.decode("utf-8"), object_pairs_hook=unique_members)
+            result = audit_settlement_ledger(snapshot, tolerance=tolerance)
+        except (OSError, ValueError, UnicodeError, InvalidOperation):
+            print("ERROR: invalid or incomplete local settlement evidence", file=err)
+            return 2
+        if not args.include_values:
+            for name in ("computed_native_net", "exchange_minus_bot", "computed_minus_exchange"):
+                result[name] = None
+            result["native_components"] = {
+                name: None for name in ("price_pnl", "trading_fees", "funding", "other_adjustments")
+            }
+            result["amounts_redacted"] = True
+        else:
+            result["amounts_redacted"] = False
+        print(json.dumps(result, sort_keys=True), file=out)
+        return 0
 
     if args.command == "reconcile-bybit":
         from decimal import Decimal

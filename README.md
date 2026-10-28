@@ -138,6 +138,26 @@ Bybit closed-PnL rows and Freqtrade trades can represent different lifecycle
 units, funding remains unassigned, and observed numerical equality is
 not ownership proof. See [standalone runbook](docs/standalone-bybit-candidate.md).
 
+## Exact-position native settlement audit (offline candidate)
+
+A new local **read-only** command checks one explicit position's signed source-native
+price events, each partial-fill fee, funding debit/credit, other adjustments and
+reported exchange/bot net in a single fail-closed equation:
+
+```sh
+freqtrade-truth settlement-audit --input examples/settlement-ledger.synthetic.json
+# To explicitly display potentially sensitive native amounts locally:
+freqtrade-truth settlement-audit --input examples/settlement-ledger.synthetic.json --include-values
+```
+
+By default, monetary values and all identifiers are omitted from output.
+Invalid, duplicate, foreign-position, out-of-window or cross-currency events
+are rejected as ambiguous; incomplete ledger windows never manufacture zero.
+**This is independently useful numerical evidence, not verified account
+ownership or actual PnL.** An operator-supplied JSON document cannot prove
+its own provenance, exhaustive exchange coverage or USD conversion. See the
+[exact-position ledger contract](docs/settlement-ledger.md).
+
 ## Try it in one minute — entirely offline
 
 ```bash

@@ -4,6 +4,11 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ## Unreleased — 0.0.7 exact bill query-window evidence (tag pending)
 
+- Added strictly local `settlement-audit` CLI and an exact-position native
+  event ledger reducer: explicit window/category completeness, partial-fill
+  fee aggregation, signed funding, duplicate/foreign record rejection, precise
+  Decimal totals, independent numeric difference checks and redaction by default.
+  Cross-source identity and actual account financial truth stay UNVERIFIED.
 - Fixed incomplete source distribution: include read-only safety/verification
   scripts, synthetic test fixtures and optional local Git hooks. The source
   integrity gate now rejects any archive missing required test dependencies.

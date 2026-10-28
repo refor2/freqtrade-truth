@@ -1,0 +1,68 @@
+{
+  "schema": "freqtrade-truth.settlement-ledger.v1",
+  "trade": {
+    "trade_ref": "synthetic-bot",
+    "position_ref": "synthetic-position",
+    "instrument": "BTC/USD:BTC",
+    "settlement_currency": "BTC",
+    "opened_at": "2030-01-01T00:00:00Z",
+    "closed_at": "2030-01-02T00:00:00Z",
+    "bot_net_pnl": "9.50",
+    "exchange_reported_net_pnl": "9.50"
+  },
+  "coverage": {
+    "start_at": "2030-01-01T00:00:00Z",
+    "end_at": "2030-01-02T00:00:00Z",
+    "price_complete": true,
+    "fees_complete": true,
+    "funding_complete": true,
+    "other_complete": true
+  },
+  "events": [
+    {
+      "id": "partial-1",
+      "position_ref": "synthetic-position",
+      "instrument": "BTC/USD:BTC",
+      "currency": "BTC",
+      "occurred_at": "2030-01-01T12:00:00Z",
+      "kind": "price_pnl",
+      "amount": "6.25"
+    },
+    {
+      "id": "partial-2",
+      "position_ref": "synthetic-position",
+      "instrument": "BTC/USD:BTC",
+      "currency": "BTC",
+      "occurred_at": "2030-01-01T12:00:00Z",
+      "kind": "price_pnl",
+      "amount": "4.00"
+    },
+    {
+      "id": "fill-1",
+      "position_ref": "synthetic-position",
+      "instrument": "BTC/USD:BTC",
+      "currency": "BTC",
+      "occurred_at": "2030-01-01T12:00:00Z",
+      "kind": "trading_fee",
+      "amount": "-0.25"
+    },
+    {
+      "id": "fill-2",
+      "position_ref": "synthetic-position",
+      "instrument": "BTC/USD:BTC",
+      "currency": "BTC",
+      "occurred_at": "2030-01-01T12:00:00Z",
+      "kind": "trading_fee",
+      "amount": "-0.25"
+    },
+    {
+      "id": "funding-1",
+      "position_ref": "synthetic-position",
+      "instrument": "BTC/USD:BTC",
+      "currency": "BTC",
+      "occurred_at": "2030-01-01T12:00:00Z",
+      "kind": "funding",
+      "amount": "-0.25"
+    }
+  ]
+}

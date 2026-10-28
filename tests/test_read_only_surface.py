@@ -89,6 +89,7 @@ def test_cli_exposes_only_reviewed_read_only_commands() -> None:
         "report",
         "serve",
         "okx-native-report",
+        "settlement-audit",
     }
 
 
