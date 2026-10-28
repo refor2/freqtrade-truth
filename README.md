@@ -316,3 +316,11 @@ only for backwards-compatible source snapshots.
 Read-only operators can follow the [independent acceptance checklist](docs/independent-readonly-acceptance.md)
 to distinguish source availability from financial account verification. No real
 account data or credentials should be sent to this repository.
+
+### Public repository pre-push secret protection
+
+For each local clone, enable the supplied fail-closed pre-commit/pre-push
+hooks with `git config --local core.hooksPath .githooks` **before** committing
+private work. See the [independent acceptance security section](docs/independent-readonly-acceptance.md).
+Hooks are not a substitute for GitHub-side branch/secret push protection;
+CI only runs after objects have been sent. **No API keys belong on GitHub.**

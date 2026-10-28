@@ -94,3 +94,29 @@ them; the connected app may not have repository administration/ruleset APIs.
 **Stop condition:** until #15 has independent real-account financial
 acceptance and #18 is enforced, the PR stays draft/unmerged and no stable
 v0.1 tag or certified account-level financial report is authorized.
+
+## E. Never publish secrets — pre-commit and pre-push check
+
+GitHub CI runs **after** GitHub has already received the pushed objects.
+To prevent accidental first publication, configure the included, audited
+local Git hooks **separately for each clone** before creating commits:
+
+```sh
+git config --local core.hooksPath .githooks
+python3 scripts/prepublication_guard.py --staged
+```
+
+The pre-commit hook scans exact staged Git blobs; the pre-push hook scans every
+outgoing commit (including intermediate commits later removed from the final
+tree). It rejects unknown binary material, credential-like files, suspicious
+secret assignments and embedded private account/deployment identifiers, and
+prints finding categories without printing secret values. It blocks if Git
+objects cannot be inspected. Synthetic fixtures cover both successful and
+rejected flows. These hooks are **local**, not an enforced GitHub server rule:
+`--no-verify`, a different clone, a direct GitHub API write or a faulty scanner
+can bypass them. Never rely on them as a guarantee; audit outgoing patches
+and commit history **before** any public remote upload, and configure GitHub
+secret scanning and push protection via repository Settings when available.
+Never upload exchange API keys to GitHub Actions Secrets, even as test-only
+credentials. Read-only account tests must run on a privately controlled host;
+no private fixture or environment file is to be copied to this repository.

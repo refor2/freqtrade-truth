@@ -4,6 +4,11 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ## Unreleased — 0.0.7 exact bill query-window evidence (tag pending)
 
+- Added opt-in local pre-commit/pre-push publication guard that scans exact
+  staged Git blobs and every outgoing commit, rejecting secret-like assignments,
+  prohibited files, unscannable binaries and private infrastructure before a
+  public push. Hooks must be enabled separately per clone and cannot replace
+  GitHub-side push protection. No exchange credentials are used in CI.
 - Reject out-of-window Bybit inverse closed-PnL and account transaction-log
   rows for each requested chunk instead of silently dropping them while
   reporting pagination completion. Synthetic source and integration regressions
