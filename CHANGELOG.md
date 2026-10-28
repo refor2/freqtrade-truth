@@ -36,7 +36,7 @@ comparison, never proof of shared economic trade ownership. See issue #15.
 - No cross-source authoritative bot/account/position ownership or complete
   ledger lifecycle proof; no financial `MATCH` verification, fee/funding
   attribution, real-account end-to-end evidence or stable v0.1 financial API.
-- Read-only public Bybit inverse adapter only, not an OKX/MyOKX settlement
+- Read-only public Bybit inverse adapter only, not an OKX/OKX settlement
   implementation. Private bots and private accounts are entirely outside scope.
 - Issue #15 (contract) and #18 (protected main before release tag) remain open.
   Keep release as candidate until governance gates are met.
