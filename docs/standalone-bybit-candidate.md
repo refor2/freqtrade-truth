@@ -67,6 +67,12 @@ source fee and currency. Candidate account-ledger records must have
 compatible transaction ID, order ID, native fee and currency; conflicting,
 missing or duplicate source records cannot yield positive candidates.
 One shared total Bybit page budget applies to all these endpoint reads.
+All authenticated evidence GETs are also checked *before I/O* for an
+allowlisted parameter set, explicit native instrument/order/currency scope,
+finite source-page size and nonnegative millisecond query window below seven
+days. A malformed or widened request fails instead of fetching additional
+account data. This is request-scoping hardening, **not** evidence of complete
+account history, ownership or accounting correctness.
 
 The returned `execution_ledger_review` contains only redacted counts:
 `checked_orders`, `ledger_records_in_window`,

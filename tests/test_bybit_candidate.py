@@ -263,9 +263,16 @@ def test_bybit_collector_rejects_excess_pages() -> None:
 
     bybit = _BoundedBybit(BybitSource(), max_pages=1)
     asyncio.run(bybit.get_json("v5/user/query-api"))
-    asyncio.run(bybit.get_json("v5/position/closed-pnl", {"category": "inverse"}))
+    window: dict[str, str | int | bool] = {
+        "category": "inverse",
+        "symbol": "BTCUSD",
+        "startTime": 1_800_000_000_000,
+        "endTime": 1_800_000_060_000,
+        "limit": 50,
+    }
+    asyncio.run(bybit.get_json("v5/position/closed-pnl", window))
     with pytest.raises(ValueError, match="page budget"):
-        asyncio.run(bybit.get_json("v5/position/closed-pnl", {"category": "inverse"}))
+        asyncio.run(bybit.get_json("v5/position/closed-pnl", window))
 
 
 def test_empty_sources_keep_all_ownership_unverified(

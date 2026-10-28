@@ -102,6 +102,73 @@ class BybitCandidateConfig:
             raise ValueError("net_tolerance must be a nonnegative finite Decimal")
 
 
+def _validate_private_read_scope(path: str, params: Mapping[str, str | int | bool] | None) -> None:
+    """Prevent a future adapter change from widening authenticated account reads.
+
+    The source reader remains responsible for interpreting rows and checking
+    page cursors. This outer guard enforces read-only request shape and a
+    finite time window *before* any private request reaches the transport.
+    """
+    allowed: dict[str, frozenset[str]] = {
+        "v5/position/closed-pnl": frozenset(
+            {"category", "symbol", "startTime", "endTime", "limit", "cursor"}
+        ),
+        "v5/execution/list": frozenset(
+            {"category", "orderId", "execType", "startTime", "endTime", "limit", "cursor"}
+        ),
+        "v5/account/transaction-log": frozenset(
+            {"accountType", "category", "currency", "startTime", "endTime", "limit", "cursor"}
+        ),
+    }
+    if not params or path not in allowed or set(params) - allowed[path]:
+        raise ValueError("authenticated Bybit query has missing scope or unapproved parameters")
+    start, end, limit = (params.get(key) for key in ("startTime", "endTime", "limit"))
+    if any(isinstance(value, bool) or not isinstance(value, int) for value in (start, end, limit)):
+        raise ValueError("authenticated Bybit query requires integer time bounds and page size")
+    assert isinstance(start, int) and isinstance(end, int) and isinstance(limit, int)
+    max_limit = 50 if path == "v5/account/transaction-log" else 100
+    if start < 0 or end < start or end - start >= 7 * 24 * 60 * 60 * 1000:
+        raise ValueError("authenticated Bybit query window exceeds seven-day source bound")
+    if not 1 <= limit <= max_limit:
+        raise ValueError("authenticated Bybit query page size exceeds source bound")
+    if params.get("category") != "inverse":
+        raise ValueError("authenticated Bybit query requires inverse category")
+    if "cursor" in params:
+        cursor = params["cursor"]
+        if not isinstance(cursor, str) or not cursor or len(cursor) > 1024:
+            raise ValueError("authenticated Bybit pagination cursor is invalid")
+
+    if path == "v5/position/closed-pnl":
+        value = params.get("symbol")
+        if (
+            not isinstance(value, str)
+            or not value.isascii()
+            or not value.isalnum()
+            or value != value.upper()
+        ):
+            raise ValueError("authenticated Bybit closed PnL requires canonical symbol")
+    elif path == "v5/execution/list":
+        value = params.get("orderId")
+        if (
+            not isinstance(value, str)
+            or not 1 <= len(value) <= 128
+            or value != value.strip()
+            or any(char in value for char in "/?#\r\n")
+            or params.get("execType") != "Trade"
+        ):
+            raise ValueError("authenticated Bybit execution query requires exact Trade order")
+    else:
+        currency = params.get("currency")
+        if (
+            params.get("accountType") != "UNIFIED"
+            or not isinstance(currency, str)
+            or not currency.isascii()
+            or not currency.isalnum()
+            or currency != currency.upper()
+        ):
+            raise ValueError("authenticated Bybit ledger requires UNIFIED currency scope")
+
+
 class _BoundedBybit:
     """Restrict authenticated Bybit methods and page count for the audit."""
 
@@ -123,12 +190,7 @@ class _BoundedBybit:
             "v5/execution/list",
             "v5/account/transaction-log",
         ):
-            if not params or params.get("category") != "inverse":
-                raise ValueError("Bybit private evidence request missing inverse category")
-            if path == "v5/execution/list" and (
-                not isinstance(params.get("orderId"), str) or params.get("execType") != "Trade"
-            ):
-                raise ValueError("Bybit execution GET requires exact order and Trade type")
+            _validate_private_read_scope(path, params)
             if self._pages >= self._max_pages:
                 raise ValueError("Bybit total page budget exceeded; evidence incomplete")
             self._pages += 1

@@ -4,6 +4,11 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ## Unreleased — 0.0.7 exact bill query-window evidence (tag pending)
 
+- Harden the independently runnable Bybit GET-only candidate mode: enforce
+  exact private-request parameter allowlists, finite millisecond windows,
+  bounded page size and source identity fields before any authenticated I/O.
+  Synthetic negative tests prove malformed/widened reads are rejected locally.
+  No change to trade identity or fee/funding verification claims.
 - Detect independently whether a sanitized OKX source bill query covers the
   actual associated fill timestamps. Out-of-window fill-without-bill
   is a **source-window gap**, not proof that the exchange lacks that bill.
