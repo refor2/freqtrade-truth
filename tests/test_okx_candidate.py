@@ -209,3 +209,27 @@ def test_ambiguous_multiple_bot_candidates_are_not_numeric_differences(
     )
     assert result["candidate_numeric_different"] == 0
     assert result["unverified_or_ambiguous_groups"] >= 1
+
+@pytest.mark.parametrize("limited_source", ["freqtrade", "okx"])
+def test_candidate_must_fail_closed_when_source_result_reaches_limit(
+    monkeypatch: pytest.MonkeyPatch, limited_source: str,
+) -> None:
+    from dataclasses import replace
+
+    bot = [record(SourceKind.FREQTRADE)]
+    exchange = [record(SourceKind.EXCHANGE)]
+    if limited_source == "freqtrade":
+        bot.append(replace(bot[0], record_id="additional-bot-trade"))
+    else:
+        exchange.append(replace(exchange[0], record_id="additional-exchange-position"))
+    monkeypatch.setattr(mod, "FreqtradeReadAdapter", lambda *a, **k: Reader(bot))
+    monkeypatch.setattr(mod, "OkxPositionHistoryAdapter", lambda *a, **k: Reader(exchange))
+    with pytest.raises(ValueError, match="limit"):
+        asyncio.run(
+            mod.compare_okx_candidate(
+                cfg(limit=2),
+                environ={},
+                freqtrade_transport=FakeTransport(),
+                okx_transport=FakeTransport(),
+            )
+        )
