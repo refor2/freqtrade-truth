@@ -105,7 +105,7 @@ class OkxV5ReadOnlyHmacTransport:
         ).decode("ascii")
         headers = {
             "Accept": "application/json",
-            "User-Agent": "freqtrade-truth/0.0.7",
+            "User-Agent": "freqtrade-truth/0.1.0",
             "OK-ACCESS-KEY": self._api_key,
             "OK-ACCESS-SIGN": signature,
             "OK-ACCESS-TIMESTAMP": stamp,

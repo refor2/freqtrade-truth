@@ -4,7 +4,7 @@
 
 Its goal is simple: make it easier to verify whether bot-side trade results match exchange-side financial settlement after fees, funding, and other supported adjustments are normalized.
 
-> Status: **pre-alpha preview**. Freqtrade and the first Bybit inverse read paths are implemented and test-covered. Deterministic grouping and normalized field comparison are implemented; exchange-ledger enrichment and reporting are still incomplete. Reconciliation status names, reason codes, attribution rules, and reporting contracts remain provisional until the [v0.1 contract-stabilization gate](https://github.com/refor2/freqtrade-truth/issues/15) is complete. Do not use this preview as the sole source for accounting or trading decisions.
+> **v0.1.0 scope: read-only financial-evidence and numerical candidate audit.** The package compares normalized Freqtrade and exchange observations, checks native signed arithmetic and flags incomplete/ambiguous source records. A numerical `match` **never** proves that two rows represent the same economic trade or that fees, funding, ownership, historical retention or USD valuation are complete. All account-verification flags remain false by design. **Do not use this package as certified accounting, tax or trading PnL.** See [the explicit v0.1 contract](docs/v0.1-candidate-contract.md).
 
 ## Live Freqtrade / OKX two-source candidate audit (read-only)
 
@@ -41,7 +41,7 @@ independent.
 
 Example: `freqtrade-truth okx-native-report --input examples/okx-fee-evidence.synthetic.json`
 
-The funding candidate checks are exercised with public synthetic examples. Financial Truth v0.1 remains open.
+The funding candidate checks are exercised with public synthetic examples. Verified account-level financial truth is outside the v0.1.0 candidate-only contract.
 
 ## OKX fee-component evidence (0.0.5 candidate)
 
@@ -177,7 +177,7 @@ freqtrade-truth demo --json
 The demo uses synthetic records only; no credentials or exchange access. It
 shows numerical `match`, `review` and `incomplete` examples. **A numeric
 `match` is not proof of matching economic trade/account ownership**; the
-public v0.1 identity and attribution contract is not yet finalized.
+future verified-account identity and attribution contract is not included in v0.1.0.
 See [the offline demonstration](docs/offline-demo.md).
 
 ## Why
@@ -230,7 +230,7 @@ The foundation milestone defines contracts before integrations:
 
 See [docs/data-model.md](docs/data-model.md), [docs/reconciliation.md](docs/reconciliation.md), [docs/freqtrade-adapter.md](docs/freqtrade-adapter.md), [docs/bybit-adapter.md](docs/bybit-adapter.md), [docs/okx-adapter.md](docs/okx-adapter.md), [docs/compatibility.md](docs/compatibility.md), [docs/versioning.md](docs/versioning.md), [docs/first-run.md](docs/first-run.md), [docs/dependency-audit.md](docs/dependency-audit.md), and [ROADMAP.md](ROADMAP.md).
 
-## Planned v0.1 scope
+## v0.1.0 candidate-only scope (no verified-account accounting)
 
 - Freqtrade read adapter.
 - One exchange read adapter.

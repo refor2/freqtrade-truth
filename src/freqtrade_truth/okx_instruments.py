@@ -58,7 +58,7 @@ def _validate_sync(*, region: str, inst_id: str, inst_type: str, settle: str) ->
         connection.request(
             "GET",
             target,
-            headers={"Accept": "application/json", "User-Agent": "freqtrade-truth/0.0.7"},
+            headers={"Accept": "application/json", "User-Agent": "freqtrade-truth/0.1.0"},
         )
         response = connection.getresponse()
         if response.status != 200:

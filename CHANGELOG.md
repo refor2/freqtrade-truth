@@ -2,6 +2,18 @@
 
 All notable public changes to Freqtrade Truth are documented here.
 
+## 0.1.0 — candidate-only source evidence audit (release candidate, 2026-10-29)
+
+- Freeze a narrow v0.1.0 **numeric candidate** contract, separately from
+  certified account-owned financial accounting. Numerical MATCH never means
+  verified economic identity, complete account history, attributed funding,
+  certified net PnL or USD valuation.
+- Preserve strict source-only and no-credentials-in-repository safety boundaries,
+  explicit missing-data states and redacted reports. Existing Freqtrade, Bybit
+  and OKX read-only adapters remain optional operator-configured integrations.
+- Pass source pagination, mismatch, duplicate, cross-currency and incomplete
+  result tests; build reproducible wheel/sdist and run public CI matrix.
+
 ## Unreleased — 0.0.7 exact bill query-window evidence (tag pending)
 
 - Guard Freqtrade pagination against duplicate closed IDs, changing source totals, oversized pages, and premature empty pages; incomplete source data fails closed.

@@ -15,7 +15,7 @@ _CHECKER = runpy.run_path(
 def test_source_archive_cannot_pass_without_supporting_scripts_and_fixture(
     tmp_path: Path,
 ) -> None:
-    version = "0.0.7"
+    version = "0.1.0"
     root = f"freqtrade_truth-{version}/"
     sdist = tmp_path / f"freqtrade_truth-{version}.tar.gz"
     source_files = (

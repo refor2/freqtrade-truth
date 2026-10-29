@@ -90,7 +90,7 @@ def test_official_eea_public_instrument_preflight_exact_get_only(
             "/api/v5/public/instruments?instType=FUTURES&instId=BTC-USD-310404",
         )
     ]
-    assert FakeConnection.headers_seen[0]["User-Agent"] == "freqtrade-truth/0.0.7"
+    assert FakeConnection.headers_seen[0]["User-Agent"] == "freqtrade-truth/0.1.0"
     assert res.closed
 
 

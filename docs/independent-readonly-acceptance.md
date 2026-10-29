@@ -1,3 +1,10 @@
+> **Scope update (2026-10-29):** this document is an acceptance checklist for
+> **certified account-level settlement** (future issue #15), NOT a release
+> prerequisite for v0.1.0's expressly unverified numerical candidate toolkit.
+> Read-only client integration remains optional per operator; credentials
+> must stay entirely local and never go to GitHub or CI.
+> See [v0.1-candidate-contract.md](v0.1-candidate-contract.md).
+
 # Independent financial evidence acceptance — v0.1 HOLD
 
 **Status: executable source preview, not accepted financial accounting.**
