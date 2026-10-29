@@ -34,6 +34,18 @@ No API credentials or private operator data go to GitHub or release assets.
 8. Verify the wheel can be installed and imported in a clean environment.
 9. Review release notes for private or sensitive information.
 
+## Automated v0.1.0 publication
+
+The existing GitHub CI workflow includes a **main-push-only** release job,
+conditioned on public safety, static quality, package integrity and the entire
+Python test matrix being green. It retrieves artifacts from the same CI run,
+rechecks version and artifact integrity, and publishes the exact main commit
+as `v0.1.0`. GitHub's ephemeral workflow identity is restricted to that
+release job (`contents:write`, `actions:read`); no operator credentials
+are stored in GitHub or CI. PRs and forks cannot invoke the release job.
+Existing tags/releases are not overwritten. This does not enable GitHub
+branch protection or imply account-level settlement certification.
+
 ## Tagging
 
 Tags use the format:
