@@ -124,7 +124,7 @@ def test_missing_native_funding_never_qualifies_numeric_match() -> None:
     )
     assert cast(dict[str, int], out["native_source_arithmetic"])["incomplete"] == 1
     assert out["candidate_numeric_equal"] == 0
-    assert out["unverified_or_ambiguous_groups"] >= 1
+    assert cast(int, out["unverified_or_ambiguous_groups"]) >= 1
 
 
 def test_contradictory_source_equation_raises_without_false_match() -> None:
