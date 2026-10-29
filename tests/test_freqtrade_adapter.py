@@ -237,3 +237,66 @@ def test_invalid_or_ambiguous_ccxt_settlement_suffix_fails_closed(pair: str) -> 
     }
     with pytest.raises(FreqtradeResponseError, match="settlement"):
         asyncio.run(FreqtradeReadAdapter(StaticTransport(payload)).fetch_closed_trades(query()))
+
+class SequenceTransport:
+    """Synthetic offset-aware pagination, with intentionally mutable source pages."""
+
+    def __init__(self, *pages: JsonObject) -> None:
+        self.pages = list(pages)
+
+    async def get_json(
+        self, path: str, params: Mapping[str, str | int | bool] | None = None
+    ) -> JsonObject:
+        assert path == "trades"
+        if not self.pages:
+            raise AssertionError("unexpected source pagination")
+        return self.pages.pop(0)
+
+
+def _closed_row(trade_id: int) -> dict[str, object]:
+    return {
+        "trade_id": trade_id,
+        "pair": "BTC/USDT:USDT",
+        "quote_currency": "USDT",
+        "is_open": False,
+        "open_timestamp": 1893456000000,
+        "close_timestamp": 1893499200000,
+        "profit_abs": "2.0",
+        "funding_fees": "0",
+    }
+
+
+def test_duplicate_trade_id_across_pages_fails_closed() -> None:
+    t = SequenceTransport(
+        {"trades": [_closed_row(1001)], "offset": 0, "total_trades": 2},
+        {"trades": [_closed_row(1001)], "offset": 1, "total_trades": 2},
+    )
+    with pytest.raises(FreqtradeResponseError, match="duplicate"):
+        asyncio.run(FreqtradeReadAdapter(t, page_size=1).fetch_closed_trades(query()))
+
+
+def test_changing_source_total_during_pagination_fails_closed() -> None:
+    t = SequenceTransport(
+        {"trades": [_closed_row(1001)], "offset": 0, "total_trades": 2},
+        {"trades": [_closed_row(1002)], "offset": 1, "total_trades": 3},
+    )
+    with pytest.raises(FreqtradeResponseError, match="total_trades"):
+        asyncio.run(FreqtradeReadAdapter(t, page_size=1).fetch_closed_trades(query()))
+
+
+def test_oversized_source_page_fails_closed() -> None:
+    t = SequenceTransport(
+        {
+            "trades": [_closed_row(1001), _closed_row(1002)],
+            "offset": 0,
+            "total_trades": 2,
+        }
+    )
+    with pytest.raises(FreqtradeResponseError, match="page_size"):
+        asyncio.run(FreqtradeReadAdapter(t, page_size=1).fetch_closed_trades(query()))
+
+
+def test_empty_page_before_claimed_total_fails_closed() -> None:
+    t = SequenceTransport({"trades": [], "offset": 0, "total_trades": 3})
+    with pytest.raises(FreqtradeResponseError, match="empty source page"):
+        asyncio.run(FreqtradeReadAdapter(t, page_size=1).fetch_closed_trades(query()))
