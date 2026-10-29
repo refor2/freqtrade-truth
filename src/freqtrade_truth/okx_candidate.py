@@ -155,7 +155,11 @@ async def compare_okx_candidate(
         limit=config.limit,
     )
     bot = tuple(await from_ft.fetch_closed_trades(query))
+    if len(bot) >= config.limit:
+        raise ValueError("Freqtrade source result limit reached; candidate coverage is incomplete")
     exchange = tuple(await from_okx.fetch_closed_trades(query))
+    if len(exchange) >= config.limit:
+        raise ValueError("OKX source result limit reached; candidate coverage is incomplete")
     native = [audit_native_record(r, tolerance=config.net_tolerance).status for r in exchange]
     statuses = {
         status: native.count(status) for status in ("consistent", "different", "incomplete")
