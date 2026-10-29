@@ -60,7 +60,7 @@ account owns a trade**. The XPERP preflight checks live public
   amount is in `USDC`, this is a **currency mismatch**. The tool does not
   treat USD and USDC as equal or invent FX rates.
 - Every query is bounded (hours, rows, number of pages); page exhaustion
-  is an error. No query-window read establishes complete historical coverage.
+  is an error. Reaching the configured source result cap is also an error, because additional unseen events could invalidate the comparison. Increase the bounded limit and repeat the read locally. No query-window read establishes complete historical coverage.
 - Any contradictory native currency in a bounded result invalidates candidate
   equality for that result; there is no implicit per-row FX conversion.
 - `candidate_numeric_different` counts known out-of-tolerance comparisons,
