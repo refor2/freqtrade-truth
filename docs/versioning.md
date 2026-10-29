@@ -48,3 +48,13 @@ Every release candidate must pass:
 8. final public diff review.
 
 A failed gate blocks release.
+
+
+## 0.1.0 candidate-only contract (2026-10-29)
+
+0.1.0 freezes the *numerical candidate* interface described in
+[v0.1-candidate-contract.md](v0.1-candidate-contract.md). It does not freeze
+or certify an account-verified financial attribution protocol. Future work on
+ownership, funding/fees completeness and event-time FX must keep the explicit
+unverified state until independently proven; new proof-bearing public
+interfaces require their own contract review.

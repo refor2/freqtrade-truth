@@ -103,9 +103,9 @@ Examples (source payload is synthetic):
 
 **Scope:** this is not an OKX settlement adapter. It neither changes bot
 execution nor proves exchange account identity, position PnL, funding,
-fee ownership or derivative contract size. An adapter for one exchange cannot certify settlement data
-from another exchange or validate private account ownership.
-No production deployment, migration or trading operation is performed.
+fee ownership or derivative contract size. A source adapter for one exchange cannot certify settlement
+records originating from another exchange. No production request,
+deployment or account migration is performed by the public package.
 
 Official source for CCXT contract symbol naming:
 https://github.com/ccxt/ccxt/wiki/Manual#contract-naming-conventions

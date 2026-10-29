@@ -55,6 +55,32 @@ synthetic data, without network, credentials or an exchange account.
 Its numerical `match` result is **not** a verified cross-source economic
 trade match. See [offline demo](offline-demo.md) for exact examples and limits.
 
+## 4. Check your own Freqtrade instance (standalone, read-only)
+
+The installed command now accepts your own Freqtrade REST API without any
+proprietary deployment components. Use a literal loopback address for HTTP (including a
+local SSH tunnel), or your own HTTPS origin. Do not expose the Freqtrade REST
+API to the public internet just for this check.
+
+Configure `FREQTRADE_READ_USERNAME` and `FREQTRADE_READ_PASSWORD` together
+through a private environment/secret store if the REST API requires Basic
+authentication. Never put credentials in the URL, command-line arguments,
+GitHub issues, or CI logs.
+
+```sh
+freqtrade-truth freqtrade-check --url http://127.0.0.1:8080 --hours 24 --limit 50 --json
+```
+
+The command requests only Freqtrade `GET /api/v1/trades`, with a bounded
+window, result limit and page budget (use `--max-pages` to set a smaller
+budget). Incomplete pagination is a **failure**, not a partial success.
+The preview prints counts, not pairs, raw trade IDs, monetary values or
+credentials; it always reports `history_complete=false`,
+`exchange_ownership_verified=false` and
+`account_financial_truth_verified=false`. This verifies access to a bot's
+recent source records, **not** that exchange-ledger fees or funding are
+correct. See [Freqtrade adapter](freqtrade-adapter.md).
+
 ## 4. Optional OKX source check (Read-only credentials)
 
 For EEA, Global, and US OKX accounts, see [OKX quick start](okx-quickstart.md).
@@ -63,7 +89,7 @@ metadata first. `freqtrade-truth okx-check` performs authenticated GET-only
 historical-position source reads, with no trading permissions required and
 no verified Freqtrade economic trade attribution.
 
-## 5. Optional credential-free public market check
+## 6. Optional credential-free public market check
 
 The CLI can verify current public Bybit inverse-market metadata:
 
@@ -86,7 +112,7 @@ Account access: skipped (public-only mode)
 
 Values in documentation are illustrative. Current exchange metadata is read at runtime.
 
-## 5. Optional authenticated read-only check
+## 7. Optional authenticated read-only check
 
 Use only a Bybit API key configured as read-only. Do not pass credentials as command-line arguments.
 
@@ -120,7 +146,7 @@ Authenticated mode:
 
 The CLI does not expose order placement, cancellation, leverage changes, transfers, or withdrawals.
 
-## 6. Safe diagnostics
+## 8. Safe diagnostics
 
 Do not paste authenticated command output, shell history, environment dumps, HTTP traces, exchange responses, or screenshots into public issues without reviewing them first.
 

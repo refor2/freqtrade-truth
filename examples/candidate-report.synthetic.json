@@ -1,0 +1,90 @@
+{
+  "schema": "freqtrade-truth.candidate.v1",
+  "freqtrade": [
+    {
+      "record_id": "synthetic-bot-1",
+      "source_name": "synthetic-freqtrade",
+      "trade_ref": "SYNTH-BOT-1",
+      "instrument": "BTC/USD:USD-310404",
+      "settlement_currency": "USDC",
+      "closed_at": "2030-01-01T12:00:00Z",
+      "price_pnl": "12.00",
+      "trading_fees": "-0.05",
+      "funding": "-0.02",
+      "other_adjustments": "0",
+      "reported_net_pnl": "11.93"
+    },
+    {
+      "record_id": "synthetic-bot-2",
+      "source_name": "synthetic-freqtrade",
+      "trade_ref": "SYNTH-BOT-2",
+      "instrument": "BTC/USD:USD-310404",
+      "settlement_currency": "USDC",
+      "closed_at": "2030-01-02T12:00:00Z",
+      "price_pnl": "8.00",
+      "trading_fees": "-0.05",
+      "funding": "-0.02",
+      "other_adjustments": "0",
+      "reported_net_pnl": "7.93"
+    },
+    {
+      "record_id": "synthetic-bot-3",
+      "source_name": "synthetic-freqtrade",
+      "trade_ref": "SYNTH-BOT-3",
+      "instrument": "BTC/USD:USD-310404",
+      "settlement_currency": "USDC",
+      "closed_at": "2030-01-03T12:00:00Z",
+      "price_pnl": "4.00",
+      "trading_fees": "-0.05",
+      "funding": "-0.02",
+      "other_adjustments": "0",
+      "reported_net_pnl": "3.93"
+    }
+  ],
+  "exchange": [
+    {
+      "record_id": "synthetic-exchange-1",
+      "source_name": "synthetic-exchange",
+      "trade_ref": "SYNTH-EXCHANGE-1",
+      "instrument": "BTC/USD:USD-310404",
+      "settlement_currency": "USDC",
+      "closed_at": "2030-01-01T12:00:00Z",
+      "price_pnl": "12.00",
+      "trading_fees": "-0.05",
+      "funding": "-0.02",
+      "other_adjustments": "0",
+      "reported_net_pnl": "11.93"
+    },
+    {
+      "record_id": "synthetic-exchange-2",
+      "source_name": "synthetic-exchange",
+      "trade_ref": "SYNTH-EXCHANGE-2",
+      "instrument": "BTC/USD:USD-310404",
+      "settlement_currency": "USDC",
+      "closed_at": "2030-01-02T12:00:00Z",
+      "price_pnl": "7.50",
+      "trading_fees": "-0.05",
+      "funding": "-0.02",
+      "other_adjustments": "0",
+      "reported_net_pnl": "7.43"
+    },
+    {
+      "record_id": "synthetic-exchange-3",
+      "source_name": "synthetic-exchange",
+      "trade_ref": "SYNTH-EXCHANGE-3",
+      "instrument": "BTC/USD:USD-310404",
+      "settlement_currency": "USDC",
+      "closed_at": "2030-01-03T12:00:00Z",
+      "price_pnl": "4.00",
+      "trading_fees": null,
+      "funding": "-0.02",
+      "other_adjustments": "0",
+      "reported_net_pnl": "3.93"
+    }
+  ],
+  "tolerance": {
+    "close_seconds": 60,
+    "reported_net_pnl": "0.01",
+    "price_pnl": "0.01"
+  }
+}

@@ -84,3 +84,18 @@ No field is silently synthesized merely to satisfy the model.
 Normalized trade records are immutable dataclasses.
 
 This makes them safe inputs for deterministic reconciliation and reduces accidental mutation across layers.
+
+## Financial Truth verdict separation (v0.1 preview contract)
+
+The legacy reconcile_group().status is a NUMERIC comparison only.
+The explicit numeric_status alias can be match, review, or incomplete.
+No value proves trade ownership or verified net financial results.
+
+identity_status and financial_truth_status are always unverified, and
+verified_financial_match is always False for generic time-window
+reconciliation (including numerically equal records). Verified accounting
+requires separately reviewed source account provenance and complete
+coverage. Generic numeric comparison cannot manufacture it.
+
+The additive candidate reporting API also carries financial_truth_status.
+No numeric match is proof of funding ownership or historic USD conversion.

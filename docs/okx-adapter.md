@@ -89,17 +89,20 @@ non-official host is rejected; no POST support exists. It is still not
 capable of proving that the key itself has only Read permissions, so
 use an independently configured read-only account key and appropriate
 IP restrictions. The authenticated source endpoint is not accessible from
-every location. A 2026-10-21 public `/api/v5/public/instruments` smoke request
-from the project's development NUC returned HTTP 403, so **no successful
-live OKX account-read claim is made**.
-The package does not ship account-specific private adapters.
+every location. Public instrument requests can receive HTTP 403
+depending on account region or network; a public preflight cannot
+certify that an authenticated account read is available.
+This library does not ship private account readers or proprietary
+deployment integrations.
 
-### Integration boundary
+### Integration boundaries
 
-Operators must verify provenance, source permissions and exact
-position/order/fill/bill ownership independently. This source
-adapter cannot certify financial settlement, control trading, or substitute
-for a proven account-native reconciler.
+Consumers must validate provenance, order/fill/position/bill links,
+account permissions, and native-currency coverage independently.
+This public adapter is source-level numeric input only and must not be
+substituted for a verified accounting or trading engine.
+Any future deployment integration should be isolated, pinned,
+read-only and synthetically tested first.
 
 ## Official references
 

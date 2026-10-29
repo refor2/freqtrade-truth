@@ -105,3 +105,19 @@ def test_key_like_file_suffix_fails(tmp_path: Path) -> None:
 
     assert result.returncode == 1
     assert "prohibited key/certificate-like file" in result.stdout
+
+
+def test_unquoted_exchange_api_key_in_text_file_is_blocked(tmp_path: Path) -> None:
+    payload = "BYBIT_" + "API_KEY=" + "synthetic-unquoted-access-string-000000000000"
+    result = run_safety_check(tmp_path, {"examples/sample.csv": payload})
+    assert result.returncode != 0
+    assert "possible unquoted secret assignment" in result.stdout
+    assert "synthetic-unquoted-access-string" not in result.stdout
+
+
+def test_new_style_github_pat_in_text_is_blocked(tmp_path: Path) -> None:
+    token = "github_" + "pat_" + "Z" * 30
+    result = run_safety_check(tmp_path, {"docs/sample.md": "temporary ref " + token})
+    assert result.returncode != 0
+    assert "possible GitHub fine-grained token" in result.stdout
+    assert token not in result.stdout

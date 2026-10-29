@@ -1,14 +1,20 @@
 # Release process
 
-Releases are cut from the protected public `main` branch after all required checks pass.
+Releases are cut from a reviewed public `main` commit with verified CI,
+public-safety checks, an installed wheel and an explicit release scope.
 
-**0.0.2 pre-alpha candidate:** the unified Bybit source evidence, offline demo and
-CCXT dated settlement corrections can be built and tested independently. A
-successful CI run or a new package version **does not mean a GitHub tag or release
-exists**. First verify GitHub's `main` protection (issue #18) and source
-identity limitations (issue #15), and then cut the release. Numerical `MATCH`
-remains preview-only, never verified economic ownership.
+**v0.1.0 is a candidate-only financial evidence audit, not certified account
+settlement.** Its explicit, intentionally limited contract is documented in
+[docs/v0.1-candidate-contract.md](docs/v0.1-candidate-contract.md).
+No real account, historical USD conversion, funding ownership or economic
+cross-source identity is claimed. Account-level proof belongs to a separately
+reviewed future milestone (issue #15).
 
+Main branch protection/rulesets (issue #18) remain recommended defense in depth,
+not a runtime dependency, a need for customer keys, or a substitute for exact
+prepublication review. Where branch settings cannot be verified, record that
+governance limitation explicitly instead of claiming that main is protected.
+No API credentials or private operator data go to GitHub or release assets.
 
 ## Before tagging
 
@@ -27,6 +33,18 @@ remains preview-only, never verified economic ownership.
    ```
 8. Verify the wheel can be installed and imported in a clean environment.
 9. Review release notes for private or sensitive information.
+
+## Automated v0.1.0 publication
+
+The existing GitHub CI workflow includes a **main-push-only** release job,
+conditioned on public safety, static quality, package integrity and the entire
+Python test matrix being green. It retrieves artifacts from the same CI run,
+rechecks version and artifact integrity, and publishes the exact main commit
+as `v0.1.0`. GitHub's ephemeral workflow identity is restricted to that
+release job (`contents:write`, `actions:read`); no operator credentials
+are stored in GitHub or CI. PRs and forks cannot invoke the release job.
+Existing tags/releases are not overwritten. This does not enable GitHub
+branch protection or imply account-level settlement certification.
 
 ## Tagging
 
@@ -56,6 +74,6 @@ Do not attach private datasets, logs, credentials, or environment-specific confi
 
 ## Package publishing
 
-The 0.0.1 preview is a GitHub release only.
+The initial v0.1.0 scope is a GitHub release only.
 
 Publishing to a package index should be introduced later as a separate reviewed supply-chain change.

@@ -311,3 +311,36 @@ def test_exchange_input_order_does_not_change_result() -> None:
     )
 
     assert backward == forward
+
+
+def test_report_contract_separates_numeric_match_from_financial_truth() -> None:
+    """The public domain object must never advertise verified owner on numeric match."""
+    result = reconcile_group(matching_group(), tolerance=ReconciliationTolerance())
+    assert result.numeric_status is ReconciliationStatus.MATCH
+    assert result.identity_status == "unverified"
+    assert result.financial_truth_status == "unverified"
+    assert result.verified_financial_match is False
+
+
+def test_disagreement_remains_numeric_without_false_ownership_attribution() -> None:
+    bot = record(SourceKind.FREQTRADE, "bot-num", reported_net_pnl=Decimal("1"))
+    other = record(SourceKind.EXCHANGE, "other-num", reported_net_pnl=Decimal("2"))
+    result = reconcile_group(
+        group((bot,), (other,)),
+        tolerance=ReconciliationTolerance(),
+        fields=(FinancialField.REPORTED_NET_PNL,),
+    )
+    assert result.numeric_status is ReconciliationStatus.REVIEW
+    assert result.identity_status == "unverified"
+    assert result.financial_truth_status == "unverified"
+    assert result.verified_financial_match is False
+
+
+@pytest.mark.parametrize("unrecognized", ["bad", 42, None])
+def test_unknown_financial_field_must_not_produce_false_match(unrecognized: object) -> None:
+    with pytest.raises(ValueError, match="FinancialField"):
+        reconcile_group(
+            matching_group(),
+            tolerance=ReconciliationTolerance(),
+            fields=(unrecognized,),  # type: ignore[arg-type]
+        )

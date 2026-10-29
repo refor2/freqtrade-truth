@@ -81,6 +81,14 @@ jobs:
       - name: Release integrity
         run: python scripts/release_integrity_check.py
 
+      - name: Verify extracted source distribution can run its own tests
+        run: |
+          mkdir -p "$RUNNER_TEMP/freqtrade-truth-source-check"
+          tar -xzf dist/freqtrade_truth-*.tar.gz -C "$RUNNER_TEMP/freqtrade-truth-source-check"
+          cd "$RUNNER_TEMP"/freqtrade-truth-source-check/freqtrade_truth-*
+          python -m pip install -e ".[dev]"
+          python -m pytest -q
+
       - name: Install built wheel
         run: python -m pip install --force-reinstall dist/*.whl
 
@@ -103,7 +111,24 @@ jobs:
           freqtrade-truth demo --json
           python -m freqtrade_truth demo --json
           freqtrade-truth okx-check --help
+          freqtrade-truth freqtrade-check --help
+          freqtrade-truth reconcile-bybit --help
+          python -m freqtrade_truth reconcile-bybit --help
+          python -m freqtrade_truth reconcile-bybit --help
           python -m freqtrade_truth okx-check --help
+          freqtrade-truth okx-native-report --input examples/okx-native.synthetic.json
+          freqtrade-truth okx-native-report --input examples/okx-fee-evidence.synthetic.json
+          freqtrade-truth report --input examples/candidate-report.synthetic.json --format json
+          freqtrade-truth report --input examples/candidate-report.synthetic.json --format csv
+          freqtrade-truth report --input examples/candidate-report.synthetic.json --format html
+
+      - name: Upload installable distributions
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: freqtrade-truth-build-${{ github.sha }}
+          path: dist/
+          retention-days: 14
+          if-no-files-found: error
 
   tests:
     runs-on: ubuntu-latest
@@ -128,3 +153,49 @@ jobs:
 
       - name: Pytest
         run: pytest
+
+  release-v010:
+    name: Publish v0.1.0 after all main checks
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [public-safety, static-quality, package, tests]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - name: Checkout reviewed main commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - name: Python for release verification
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.14"
+      - name: Verify explicit version and review boundary
+        run: |
+          python - <<'PYVERIFY'
+          import tomllib
+          from pathlib import Path
+          declared = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
+          source = Path("src/freqtrade_truth/__init__.py").read_text()
+          if declared != "0.1.0" or '__version__ = "0.1.0"' not in source:
+              raise SystemExit("v0.1.0 release is not qualified by this workflow")
+          PYVERIFY
+          python scripts/public_safety_check.py
+          python scripts/commit_metadata_check.py
+      - name: Retrieve exact CI-tested package artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download "$GITHUB_RUN_ID" --repo "$GITHUB_REPOSITORY"             --name "freqtrade-truth-build-$GITHUB_SHA" --dir dist
+      - name: Verify wheel and source archive
+        run: |
+          python scripts/release_integrity_check.py
+          sha256sum dist/*.whl dist/*.tar.gz
+      - name: Create first GitHub release with verified artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view "v0.1.0" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "v0.1.0 release already exists; no duplicate publication."
+            exit 0
+          fi
+          gh release create "v0.1.0"             dist/freqtrade_truth-0.1.0-py3-none-any.whl             dist/freqtrade_truth-0.1.0.tar.gz             --repo "$GITHUB_REPOSITORY"             --target "$GITHUB_SHA"             --title "Freqtrade Truth v0.1.0"             --notes-file docs/v0.1-release-notes.md

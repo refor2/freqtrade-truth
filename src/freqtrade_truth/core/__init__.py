@@ -28,6 +28,7 @@ from freqtrade_truth.core.reconciliation import (
     ReconciliationTolerance,
     group_comparable_records,
 )
+from freqtrade_truth.core.settlement_ledger import audit_settlement_ledger
 
 __all__ = [
     "FundingEvidenceReasonCode",
@@ -50,4 +51,5 @@ __all__ = [
     "group_comparable_records",
     "reconcile_group",
     "collect_funding_window_evidence",
+    "audit_settlement_ledger",
 ]

@@ -22,6 +22,7 @@ _ALLOWED_AUTHENTICATED_PATHS = frozenset(
     {
         "v5/user/query-api",
         "v5/position/closed-pnl",
+        "v5/execution/list",
         "v5/account/transaction-log",
     }
 )

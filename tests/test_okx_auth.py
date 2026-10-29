@@ -83,6 +83,7 @@ def test_okx_hmac_headers_query_and_no_post(monkeypatch: pytest.MonkeyPatch) -> 
     assert headers["OK-ACCESS-KEY"] == "dummy-key"
     assert headers["OK-ACCESS-PASSPHRASE"] == "dummy-passphrase"
     assert headers["OK-ACCESS-TIMESTAMP"] == NOW
+    assert headers["User-Agent"] == "freqtrade-truth/0.1.0"
     assert conn.closed
     assert FakeConnection.response.closed
 

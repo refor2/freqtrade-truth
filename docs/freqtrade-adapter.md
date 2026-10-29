@@ -131,6 +131,6 @@ Official references:
 - https://bybit-exchange.github.io/docs/v5/position/close-pnl
 
 The associated synthetic regression includes one explicitly expected-to-fail
-final-identity assertion. That marked debt is a **v0.1 blocker**, not a
+final-identity assertion. That marked debt is a **verified-account feature blocker (future milestone)**, not a
 financial-correctness PASS, until #15 accepts and implements a verified
 cross-source identity/ownership contract.
