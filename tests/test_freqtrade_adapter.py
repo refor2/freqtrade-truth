@@ -13,7 +13,7 @@ from freqtrade_truth.adapters.freqtrade import (
     FreqtradeReadAdapter,
     FreqtradeResponseError,
 )
-from freqtrade_truth.adapters.http import JsonObject
+from freqtrade_truth.adapters.http import JsonObject, JsonValue
 from freqtrade_truth.core.models import ClosedTradeQuery, FinancialField, SourceKind
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -254,7 +254,7 @@ class SequenceTransport:
         return self.pages.pop(0)
 
 
-def _closed_row(trade_id: int) -> dict[str, object]:
+def _closed_row(trade_id: int) -> dict[str, JsonValue]:
     return {
         "trade_id": trade_id,
         "pair": "BTC/USDT:USDT",
