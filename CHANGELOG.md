@@ -4,6 +4,10 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ## Unreleased — 0.0.7 exact bill query-window evidence (tag pending)
 
+- Guard Freqtrade pagination against duplicate closed IDs, changing source totals, oversized pages, and premature empty pages; incomplete source data fails closed.
+- Reject OKX/Freqtrade numeric candidates when either source reaches the configured result cap; a truncated comparison cannot be reported as a match.
+- Add synthetic end-to-end testing through the actual Freqtrade and OKX adapter parsers, including missing native funding and contradictory source arithmetic.
+
 - Correct fail-closed public numeric candidate classification: reject invalid
   requested financial fields rather than silently returning MATCH; a foreign
   native currency blocks any apparent match in the same source window; and
