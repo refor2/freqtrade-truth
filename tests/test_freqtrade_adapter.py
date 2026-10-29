@@ -238,6 +238,7 @@ def test_invalid_or_ambiguous_ccxt_settlement_suffix_fails_closed(pair: str) -> 
     with pytest.raises(FreqtradeResponseError, match="settlement"):
         asyncio.run(FreqtradeReadAdapter(StaticTransport(payload)).fetch_closed_trades(query()))
 
+
 class SequenceTransport:
     """Synthetic offset-aware pagination, with intentionally mutable source pages."""
 
