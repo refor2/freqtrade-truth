@@ -67,6 +67,8 @@ class FreqtradeReadAdapter:
         query: ClosedTradeQuery,
     ) -> Sequence[NormalizedTradeRecord]:
         records: list[NormalizedTradeRecord] = []
+        seen_trade_ids: set[str] = set()
+        expected_total: int | None = None
         offset = 0
 
         while True:
@@ -85,11 +87,22 @@ class FreqtradeReadAdapter:
 
             if response_offset != offset:
                 raise FreqtradeResponseError("Freqtrade response offset does not match request")
+            if expected_total is None:
+                expected_total = total_trades
+            elif total_trades != expected_total:
+                raise FreqtradeResponseError("Freqtrade total_trades changed during pagination")
+            if len(trades) > self._page_size:
+                raise FreqtradeResponseError("Freqtrade response exceeded requested page_size")
+            if offset + len(trades) > total_trades:
+                raise FreqtradeResponseError("Freqtrade page exceeds declared total_trades")
 
             for raw_trade in trades:
                 record = self._normalize_trade(raw_trade)
                 if record is None:
                     continue
+                if record.record_id in seen_trade_ids:
+                    raise FreqtradeResponseError("duplicate Freqtrade trade_id across pages")
+                seen_trade_ids.add(record.record_id)
                 if record.closed_at < query.closed_from or record.closed_at > query.closed_until:
                     continue
                 if query.instrument is not None and record.instrument != query.instrument:
@@ -101,6 +114,10 @@ class FreqtradeReadAdapter:
 
             page_count = len(trades)
             if page_count == 0:
+                if offset < total_trades:
+                    raise FreqtradeResponseError(
+                        "Freqtrade empty source page before declared total_trades"
+                    )
                 break
 
             offset += page_count
