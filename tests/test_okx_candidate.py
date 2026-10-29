@@ -210,9 +210,11 @@ def test_ambiguous_multiple_bot_candidates_are_not_numeric_differences(
     assert result["candidate_numeric_different"] == 0
     assert result["unverified_or_ambiguous_groups"] >= 1
 
+
 @pytest.mark.parametrize("limited_source", ["freqtrade", "okx"])
 def test_candidate_must_fail_closed_when_source_result_reaches_limit(
-    monkeypatch: pytest.MonkeyPatch, limited_source: str,
+    monkeypatch: pytest.MonkeyPatch,
+    limited_source: str,
 ) -> None:
     from dataclasses import replace
 
