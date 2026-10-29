@@ -157,3 +157,55 @@ def test_missing_read_only_credentials_fail_before_network() -> None:
 def test_bad_config_rejected(bad: dict[str, object]) -> None:
     with pytest.raises(ValueError):
         cfg(**bad)
+
+
+def test_any_foreign_currency_blocks_candidate_equality(monkeypatch: pytest.MonkeyPatch) -> None:
+    bot_rows = [record(SourceKind.FREQTRADE)]
+    exchange_rows = [record(SourceKind.EXCHANGE)]
+    exchange_rows.append(record(SourceKind.EXCHANGE, ccy="USDC"))
+    # A matching record must not conceal an extra contradictory exchange unit.
+    from dataclasses import replace
+
+    exchange_rows[-1] = replace(exchange_rows[-1], record_id="exchange-other-currency")
+    monkeypatch.setattr(mod, "FreqtradeReadAdapter", lambda *a, **k: Reader(bot_rows))
+    monkeypatch.setattr(mod, "OkxPositionHistoryAdapter", lambda *a, **k: Reader(exchange_rows))
+    result = cast(
+        dict[str, Any],
+        asyncio.run(
+            mod.compare_okx_candidate(
+                cfg(),
+                environ={},
+                freqtrade_transport=FakeTransport(),
+                okx_transport=FakeTransport(),
+            )
+        ),
+    )
+    assert result["source_currency_mismatch"] is True
+    assert result["candidate_numeric_equal"] == 0
+    assert result["unverified_or_ambiguous_groups"] >= 1
+
+
+def test_ambiguous_multiple_bot_candidates_are_not_numeric_differences(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from dataclasses import replace
+
+    bot_rows = [record(SourceKind.FREQTRADE)]
+    bot_rows.append(replace(bot_rows[0], record_id="bot-other"))
+    monkeypatch.setattr(mod, "FreqtradeReadAdapter", lambda *a, **k: Reader(bot_rows))
+    monkeypatch.setattr(
+        mod, "OkxPositionHistoryAdapter", lambda *a, **k: Reader([record(SourceKind.EXCHANGE)])
+    )
+    result = cast(
+        dict[str, Any],
+        asyncio.run(
+            mod.compare_okx_candidate(
+                cfg(),
+                environ={},
+                freqtrade_transport=FakeTransport(),
+                okx_transport=FakeTransport(),
+            )
+        ),
+    )
+    assert result["candidate_numeric_different"] == 0
+    assert result["unverified_or_ambiguous_groups"] >= 1

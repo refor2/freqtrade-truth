@@ -61,6 +61,11 @@ account owns a trade**. The XPERP preflight checks live public
   treat USD and USDC as equal or invent FX rates.
 - Every query is bounded (hours, rows, number of pages); page exhaustion
   is an error. No query-window read establishes complete historical coverage.
+- Any contradictory native currency in a bounded result invalidates candidate
+  equality for that result; there is no implicit per-row FX conversion.
+- `candidate_numeric_different` counts known out-of-tolerance comparisons,
+  **not** review states caused solely by multiple competing bot records;
+  ambiguous links remain incomplete/ambiguous and never become owned PnL.
 - Output exposes only aggregate counts, never exchange account identifiers,
   order IDs, amounts, API keys or credentials. It cannot verify event
   ownership, funding attribution, full ledger coverage, or USD valuation.

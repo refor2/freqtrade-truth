@@ -4,6 +4,12 @@ All notable public changes to Freqtrade Truth are documented here.
 
 ## Unreleased — 0.0.7 exact bill query-window evidence (tag pending)
 
+- Correct fail-closed public numeric candidate classification: reject invalid
+  requested financial fields rather than silently returning MATCH; a foreign
+  native currency blocks any apparent match in the same source window; and
+  ambiguous multi-trade joins are no longer misreported as proven PnL deltas.
+  Added TDD RED/GREEN negative regressions; no trading/API execution change.
+
 - Add independent live `reconcile-okx` GET-only candidate CLI, composing
   bounded Freqtrade and OKX positions-history adapters. Numeric reported net
   comparisons require explicit instrument, currency and time tolerances.

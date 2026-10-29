@@ -173,19 +173,29 @@ async def compare_okx_candidate(
     )
     # A numeric group never verifies ownership; pre-existing source-local
     # accounting contradictions also block promotion to even a candidate match.
-    counts = report["counts"]
-    assert isinstance(counts, dict)
-    match = int(counts["match"])
-    review = int(counts["review"])
-    incomplete = int(counts["incomplete"])
-    if statuses["different"] or statuses["incomplete"]:
-        incomplete += match
-        match = 0
+    groups = report["groups"]
+    if not isinstance(groups, list) or any(not isinstance(item, dict) for item in groups):
+        raise ValueError("invalid candidate report groups")
+    match = sum(item.get("numeric_status") == "match" for item in groups)
+    # The generic REVIEW status includes structural ambiguity, not just a
+    # known numeric delta. Never call an ambiguous 2:1 join a PnL difference.
+    review = sum(
+        item.get("numeric_status") == "review"
+        and isinstance(item.get("reason_codes"), list)
+        and "value_outside_tolerance" in item["reason_codes"]
+        for item in groups
+    )
+    incomplete = len(groups) - match - review
     currency_mismatch = bool(
         bot
         and exchange
         and ({r.settlement_currency for r in bot} != {r.settlement_currency for r in exchange})
     )
+    # Never retain a superficially matching sub-group when *any* source row
+    # contradicts the specified currency or native arithmetic evidence.
+    if currency_mismatch or statuses["different"] or statuses["incomplete"]:
+        incomplete += match
+        match = 0
     return {
         "schema": "freqtrade-truth.okx-candidate.v1",
         "scope": "bounded_cross_source_numeric_candidate_only",

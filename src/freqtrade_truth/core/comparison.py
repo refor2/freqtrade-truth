@@ -176,6 +176,8 @@ def _normalize_fields(
     requested = tuple(fields)
     if not requested:
         raise ValueError("fields must not be empty when provided")
+    if any(not isinstance(field, FinancialField) for field in requested):
+        raise ValueError("fields must contain only FinancialField members")
     if len(set(requested)) != len(requested):
         raise ValueError("fields must not contain duplicates")
 

@@ -334,3 +334,13 @@ def test_disagreement_remains_numeric_without_false_ownership_attribution() -> N
     assert result.identity_status == "unverified"
     assert result.financial_truth_status == "unverified"
     assert result.verified_financial_match is False
+
+
+@pytest.mark.parametrize("unrecognized", ["bad", 42, None])
+def test_unknown_financial_field_must_not_produce_false_match(unrecognized: object) -> None:
+    with pytest.raises(ValueError, match="FinancialField"):
+        reconcile_group(
+            matching_group(),
+            tolerance=ReconciliationTolerance(),
+            fields=(unrecognized,),  # type: ignore[arg-type]
+        )
